@@ -9,7 +9,6 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.HashMap;
@@ -53,7 +52,7 @@ public class CloudFilesBasedBinaryStore extends MapBasedBinaryStore implements M
         if (data != null) {
             try {
                 client.storeObject(containerName, IOUtils.toByteArray(data), mimeType, storeKey, EMPTY_METADATA);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             } finally {
                 try {
@@ -68,7 +67,7 @@ public class CloudFilesBasedBinaryStore extends MapBasedBinaryStore implements M
             map.remove(storeKey);
             try {
                 client.deleteObject(containerName, storeKey);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
@@ -100,7 +99,7 @@ public class CloudFilesBasedBinaryStore extends MapBasedBinaryStore implements M
                     marker = file.getName();
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             //I've changed this so that it doesn't take down the whole of the server
 //            throw new RuntimeException(e);
 
@@ -112,13 +111,11 @@ public class CloudFilesBasedBinaryStore extends MapBasedBinaryStore implements M
                     init();
                 }
             }, 5, TimeUnit.SECONDS);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
         }
     }
 
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         FilesClient client = new FilesClient("cazcade", "bee5705ff5df90d7731eabf83b05f7a5");
 
         boolean loggedin = client.login();
@@ -140,11 +137,11 @@ public class CloudFilesBasedBinaryStore extends MapBasedBinaryStore implements M
                 System.out.println("\tContainer URL: " + container.getCdnURL());
                 List<FilesObject> contents = client.listObjects(container.getName());
                 System.out.println("\tFile Count: " + contents.size());
-                for (FilesObject fileObject : contents) {
-                    System.out.println("\t\tFile: " + fileObject.getName());
-                    System.out.println("\t\tContent Type: " + fileObject.getMimeType());
-                    System.out.println("\t\tModified:" + fileObject.getLastModified());
-                }
+//                for (FilesObject fileObject : contents) {
+//                    System.out.println("\t\tFile: " + fileObject.getName());
+//                    System.out.println("\t\tContent Type: " + fileObject.getMimeType());
+//                    System.out.println("\t\tModified:" + fileObject.getLastModified());
+//                }
             }
         }
     }
