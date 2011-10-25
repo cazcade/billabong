@@ -1,0 +1,18 @@
+Check out CutyCapt source.
+
+   svn co https://cutycapt.svn.sourceforge.net/svnroot/cutycapt
+
+Download latest version of QT (currently 4.6) from http://qt.nokia.com.
+
+Install QT
+
+Ensure that paths are set up correctly (normally handled by install): http://doc.qt.nokia.com/4.6/install-mac.html
+
+Open a terminal window in the CutyCapt directory where the CutyCapt.pro file is and run qmake.
+
+This generates an XCode project that can then be opened and built. This generates CutyCapt.app which contains the
+command line binary which is needed.
+
+The binary needs the QT runtime to be available on the machine where it is run.
+
+Note that this should be very similar for Linux.
