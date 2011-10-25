@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+    <bean id="imageService" class="com.cazcade.billabong.image.impl.DefaultImageService">
+        <constructor-arg index="0" ref="holdingURI"/>
+        <constructor-arg index="1" value="http://c0021096.cdn1.cloudfiles.rackspacecloud.com/"/>
+        <constructor-arg index="2" ref="store"/>
+        <constructor-arg index="3" ref="cacheManager"/>
+        <constructor-arg index="4">
+            <map>
+                <entry key="LARGE">
+                    <bean class="com.cazcade.billabong.processing.Tuple2dInteger">
+                        <constructor-arg index="0" value="1024"/>
+                        <constructor-arg index="1" value="-1"/>
+                    </bean>
+                </entry>
+                <entry key="CLIPPED_LARGE">
+                    <bean class="com.cazcade.billabong.processing.Tuple2dInteger">
+                        <constructor-arg index="0" value="1024"/>
+                        <constructor-arg index="1" value="768"/>
+                    </bean>
+                </entry>
+                <entry key="CLIPPED_MEDIUM">
+                    <bean class="com.cazcade.billabong.processing.Tuple2dInteger">
+                        <constructor-arg index="0" value="512"/>
+                        <constructor-arg index="1" value="384"/>
+                    </bean>
+                </entry>
+                <entry key="CLIPPED_SMALL">
+                    <bean class="com.cazcade.billabong.processing.Tuple2dInteger">
+                        <constructor-arg index="0" value="256"/>
+                        <constructor-arg index="1" value="192"/>
+                    </bean>
+                </entry>
+                <entry key="PROFILE_SMALL">
+                    <bean class="com.cazcade.billabong.processing.Tuple2dInteger">
+                        <constructor-arg index="0" value="32"/>
+                        <constructor-arg index="1" value="32"/>
+                    </bean>
+                </entry>
+            </map>
+        </constructor-arg>
+        <constructor-arg index="5">
+            <map>
+                <entry key="LARGE">
+                    <bean class="com.cazcade.billabong.processing.Tuple2dInteger">
+                        <constructor-arg index="0" value="-1"/>
+                        <constructor-arg index="1" value="-1"/>
+                    </bean>
+                </entry>
+                <entry key="CLIPPED_LARGE">
+                    <bean class="com.cazcade.billabong.processing.Tuple2dInteger">
+                        <constructor-arg index="0" value="1024"/>
+                        <constructor-arg index="1" value="-1"/>
+                    </bean>
+                </entry>
+                <entry key="CLIPPED_MEDIUM">
+                    <bean class="com.cazcade.billabong.processing.Tuple2dInteger">
+                        <constructor-arg index="0" value="320"/>
+                        <constructor-arg index="1" value="200"/>
+                    </bean>
+                </entry>
+                <entry key="CLIPPED_SMALL">
+                    <bean class="com.cazcade.billabong.processing.Tuple2dInteger">
+                        <constructor-arg index="0" value="80"/>
+                        <constructor-arg index="1" value="50"/>
+                    </bean>
+                </entry>
+                <entry key="PROFILE_SMALL">
+                    <bean class="com.cazcade.billabong.processing.Tuple2dInteger">
+                        <constructor-arg index="0" value="32"/>
+                        <constructor-arg index="1" value="32"/>
+                    </bean>
+                </entry>
+
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="holdingURI" class="java.net.URI">
+        <constructor-arg index="0" value="http://static.cazcade.com/images/holding.png"/>
+    </bean>
+
+    <bean id="dateHelper" class="com.cazcade.billabong.common.impl.DefaultDateHelper"/>
+
+    <!--<bean id="store" class="com.cazcade.billabong.store.impl.FileBasedBinaryStore">-->
+    <!--<constructor-arg value="binarystore"/>-->
+    <!--</bean>-->
+
+    <bean id="store" class="com.cazcade.billabong.store.impl.CloudFilesBasedBinaryStore">
+        <constructor-arg index="0" value="public"/>
+        <constructor-arg index="1" value="image/jpeg"/>
+        <constructor-arg index="2" ref="filesClient"/>
+    </bean>
+
+    <bean id="filesClient" class="com.rackspacecloud.client.cloudfiles.FilesClient">
+        <constructor-arg index="0" value="cazcade"/>
+        <constructor-arg index="1" value="bee5705ff5df90d7731eabf83b05f7a5"/>
+    </bean>
+
+    <bean id="userContentBinaryStore" class="com.cazcade.billabong.store.impl.CloudFilesBasedBinaryStore">
+        <constructor-arg index="0" value="user-content"/>
+        <constructor-arg index="1" value="application/x-cazcade"/>
+        <constructor-arg index="2" ref="filesClient"/>
+    </bean>
+
+    <bean id="userContentStore" class="com.cazcade.billabong.store.impl.UserContentStore">
+        <constructor-arg index="0" ref="userContentBinaryStore"/>
+        <constructor-arg index="1" value="http://c0021791.cdn1.cloudfiles.rackspacecloud.com/"/>
+    </bean>
+
+    <bean id="cacheManager" class="com.cazcade.billabong.image.impl.DefaultCacheManager">
+        <constructor-arg index="0" ref="executor"/>
+        <constructor-arg index="1" ref="capturer"/>
+        <constructor-arg index="2" ref="imageCapturer"/>
+        <constructor-arg index="3" ref="store"/>
+        <constructor-arg index="4">
+            <map>
+                <entry key="LARGE">
+                    <bean class="com.cazcade.billabong.processing.impl.PipelineImageProcessor">
+                        <constructor-arg>
+                            <list/>
+                        </constructor-arg>
+                    </bean>
+                </entry>
+                <entry key="CLIPPED_LARGE">
+                    <bean class="com.cazcade.billabong.processing.impl.PipelineImageProcessor">
+                        <constructor-arg>
+                            <list>
+                                <ref bean="clippingImageProcessor"/>
+                            </list>
+                        </constructor-arg>
+                    </bean>
+                </entry>
+                <entry key="CLIPPED_MEDIUM">
+                    <bean class="com.cazcade.billabong.processing.impl.PipelineImageProcessor">
+                        <constructor-arg>
+                            <list>
+                                <ref bean="clippingImageProcessor"/>
+                                <ref bean="scalingImageProcessor"/>
+                            </list>
+                        </constructor-arg>
+                    </bean>
+                </entry>
+                <entry key="CLIPPED_SMALL">
+                    <bean class="com.cazcade.billabong.processing.impl.PipelineImageProcessor">
+                        <constructor-arg>
+                            <list>
+                                <ref bean="clippingImageProcessor"/>
+                                <ref bean="scalingImageProcessor"/>
+                                <ref bean="scalingImageProcessor"/>
+                            </list>
+                        </constructor-arg>
+                    </bean>
+                </entry>
+                <entry key="PROFILE_SMALL">
+                    <bean class="com.cazcade.billabong.processing.impl.PipelineImageProcessor">
+                        <constructor-arg>
+                            <list>
+                                <ref bean="clippingImageProcessor"/>
+                                <ref bean="scalingImageProcessor"/>
+                                <ref bean="scalingImageProcessor"/>
+                                <ref bean="scalingImageProcessor"/>
+                            </list>
+                        </constructor-arg>
+                    </bean>
+                </entry>
+            </map>
+        </constructor-arg>
+        <constructor-arg index="5">
+            <map>
+                <entry key="LARGE">
+                    <bean class="com.cazcade.billabong.processing.impl.PipelineImageProcessor">
+                        <constructor-arg>
+                            <list/>
+                        </constructor-arg>
+                    </bean>
+                </entry>
+                <entry key="CLIPPED_LARGE">
+                    <bean class="com.cazcade.billabong.processing.impl.PipelineImageProcessor">
+                        <constructor-arg>
+                            <list>
+                                <bean class="com.cazcade.billabong.processing.impl.ScalingImageProcessor">
+                                    <constructor-arg index="0">
+                                        <bean class="com.cazcade.billabong.processing.impl.DefaultScaler"/>
+                                    </constructor-arg>
+                                    <constructor-arg index="1">
+                                        <bean class="com.cazcade.billabong.processing.impl.FixedProportionalScaling">
+                                            <constructor-arg index="0" value="1024"/>
+                                            <constructor-arg index="1" value="768"/>
+                                        </bean>
+                                    </constructor-arg>
+                                </bean>
+                            </list>
+                        </constructor-arg>
+                    </bean>
+                </entry>
+                <entry key="CLIPPED_MEDIUM">
+                    <bean class="com.cazcade.billabong.processing.impl.PipelineImageProcessor">
+                        <constructor-arg>
+                            <list>
+                                <bean class="com.cazcade.billabong.processing.impl.ScalingImageProcessor">
+                                    <constructor-arg index="0">
+                                        <bean class="com.cazcade.billabong.processing.impl.DefaultScaler"/>
+                                    </constructor-arg>
+                                    <constructor-arg index="1">
+                                        <bean class="com.cazcade.billabong.processing.impl.FixedProportionalScaling">
+                                            <constructor-arg index="0" value="320"/>
+                                            <constructor-arg index="1" value="200"/>
+                                        </bean>
+                                    </constructor-arg>
+                                </bean>
+                            </list>
+                        </constructor-arg>
+                    </bean>
+                </entry>
+                <entry key="CLIPPED_SMALL">
+                    <bean class="com.cazcade.billabong.processing.impl.PipelineImageProcessor">
+                        <constructor-arg>
+                            <list>
+                                <bean class="com.cazcade.billabong.processing.impl.ScalingImageProcessor">
+                                    <constructor-arg index="0">
+                                        <bean class="com.cazcade.billabong.processing.impl.DefaultScaler"/>
+                                    </constructor-arg>
+                                    <constructor-arg index="1">
+                                        <bean class="com.cazcade.billabong.processing.impl.FixedProportionalScaling">
+                                            <constructor-arg index="0" value="80"/>
+                                            <constructor-arg index="1" value="50"/>
+                                        </bean>
+                                    </constructor-arg>
+                                </bean>
+                            </list>
+                        </constructor-arg>
+                    </bean>
+                </entry>
+                <entry key="PROFILE_SMALL">
+                    <bean class="com.cazcade.billabong.processing.impl.PipelineImageProcessor">
+                        <constructor-arg>
+                            <list>
+                                <bean class="com.cazcade.billabong.processing.impl.ScalingImageProcessor">
+                                    <constructor-arg index="0">
+                                        <bean class="com.cazcade.billabong.processing.impl.DefaultScaler"/>
+                                    </constructor-arg>
+                                    <constructor-arg index="1">
+                                        <bean class="com.cazcade.billabong.processing.impl.FixedProportionalScaling">
+                                            <constructor-arg index="0" value="32"/>
+                                            <constructor-arg index="1" value="32"/>
+                                        </bean>
+                                    </constructor-arg>
+                                </bean>
+                            </list>
+                        </constructor-arg>
+                    </bean>
+                </entry>
+            </map>
+        </constructor-arg>
+
+    </bean>
+
+    <bean id="capturer" class="com.cazcade.billabong.snapshot.impl.CutyCaptCapturer">
+        <constructor-arg index="0" value="CutyCapt"/>
+        <constructor-arg index="1" ref="dateHelper"/>
+        <property name="minWidth" value="1024"/>
+        <property name="minHeight" value="768"/>
+    </bean>
+
+    <bean id="imageCapturer" class="com.cazcade.billabong.snapshot.impl.ImageURICapturer">
+    </bean>
+
+    <bean id="executor" class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">
+        <constructor-arg index="0" value="10"/>
+    </bean>
+
+    <bean id="clippingImageProcessor" class="com.cazcade.billabong.processing.impl.ClippingImageProcessor">
+        <constructor-arg index="0">
+            <bean class="com.cazcade.billabong.processing.impl.DefaultClipper"/>
+        </constructor-arg>
+        <constructor-arg index="1">
+            <bean class="com.cazcade.billabong.processing.Clipping">
+                <constructor-arg index="0">
+                    <bean class="com.cazcade.billabong.processing.Tuple2dInteger">
+                        <constructor-arg index="0" value="0"/>
+                        <constructor-arg index="1" value="0"/>
+                    </bean>
+                </constructor-arg>
+                <constructor-arg index="1">
+                    <bean class="com.cazcade.billabong.processing.Tuple2dInteger">
+                        <constructor-arg index="0" value="1023"/>
+                        <constructor-arg index="1" value="767"/>
+                    </bean>
+                </constructor-arg>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <bean id="scalingImageProcessor" class="com.cazcade.billabong.processing.impl.ScalingImageProcessor">
+        <constructor-arg index="0">
+            <bean class="com.cazcade.billabong.processing.impl.DefaultScaler"/>
+        </constructor-arg>
+        <constructor-arg index="1">
+            <bean class="com.cazcade.billabong.processing.impl.PercentScaling">
+                <constructor-arg value="50"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+</beans>

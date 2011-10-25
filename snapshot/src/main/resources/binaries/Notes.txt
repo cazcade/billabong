@@ -1,0 +1,3 @@
+Should look at using the command line support built into Plexus Utils.
+
+Don't forget to properly drain the output and error buffers so that we don't hang the process involved.
