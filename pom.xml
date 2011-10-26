@@ -93,11 +93,11 @@
     <repositories>
         <repository>
             <id>cazcade-public-internal-ip</id>
-            <url>http://office.cazcade.internal:8881/nexus/content/groups/public/</url>
+            <url>http://dev.cazcade.com:8881/nexus/content/groups/public/</url>
         </repository>
         <repository>
             <id>cazcade-public-external-ip</id>
-            <url>http://office.cazcade.com:8881/nexus/content/groups/public/</url>
+            <url>http://dev.cazcade.com:8881/nexus/content/groups/public/</url>
         </repository>
     </repositories>
 
@@ -105,23 +105,23 @@
         <repository>
             <id>cazcade.releases</id>
             <name>Cazcade Releases</name>
-            <url>dav:http://office.cazcade.internal:8881/nexus/content/repositories/releases/
+            <url>dav:http://dev.cazcade.com:8881/nexus/content/repositories/releases/
             </url>
         </repository>
         <snapshotRepository>
             <id>cazcade.snapshots</id>
             <name>Cazcade Snapshots</name>
-            <url>dav:http://office.cazcade.internal:8881/nexus/content/repositories/snapshots/
+            <url>dav:http://dev.cazcade.com:8881/nexus/content/repositories/snapshots/
             </url>
         </snapshotRepository>
     </distributionManagement>
 
     <scm>
-        <connection>scm:svn:https://office.cazcade.internal/svn/billabong/tags/billabong-1.0</connection>
-        <developerConnection>scm:svn:https://office.cazcade.internal/svn/billabong/tags/billabong-1.0
+<!-- change this to beanstalk -->
+        <connection>scm:svn:https://office.cazcade.com/svn/billabong/tags/billabong-1.0</connection>
+        <developerConnection>scm:svn:https://office.cazcade.com/svn/billabong/tags/billabong-1.0
         </developerConnection>
         <url>https://office.cazcade.internal/svn/billabong/tags/billabong-1.0</url>
+<!-- change this to beanstalk -->
     </scm>
-
-
 </project>
