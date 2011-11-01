@@ -1,20 +1,23 @@
 package com.cazcade.billabong.store.impl;
 
+import com.cazcade.billabong.store.BinaryStoreEntry;
 import com.cazcade.billabong.store.MimeTypeAwareBinaryStore;
 import com.rackspacecloud.client.cloudfiles.FilesCDNContainer;
 import com.rackspacecloud.client.cloudfiles.FilesClient;
 import com.rackspacecloud.client.cloudfiles.FilesContainer;
 import com.rackspacecloud.client.cloudfiles.FilesObject;
+import com.thoughtworks.xstream.XStream;
 import org.apache.commons.io.IOUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -22,10 +25,12 @@ import java.util.concurrent.TimeUnit;
  */
 public class CloudFilesBasedBinaryStore extends MapBasedBinaryStore implements MimeTypeAwareBinaryStore {
 
+    public static final String SERIALIZED_STORE_FILE = "billabong-file-store.xml";
     private final String containerName;
     private String defaultContainerContentType;
     private final FilesClient client;
     private static final Map<String, String> EMPTY_METADATA = Collections.emptyMap();
+    private ScheduledExecutorService loadAndSaveExecutor = Executors.newSingleThreadScheduledExecutor();
 
     public CloudFilesBasedBinaryStore(String containerName, String defaultContainerContentType, FilesClient client) {
         this.containerName = containerName;
@@ -84,34 +89,71 @@ public class CloudFilesBasedBinaryStore extends MapBasedBinaryStore implements M
     }
 
     private void init() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-        try {
-            //TODO replace with proper client initialisation...
-            client.login();
-            int limit = 1000;
-            String marker = null;
-            for (List<FilesObject> files = client.listObjectsStartingWith(containerName, null, null, limit, marker);
-                 files.size() > 0; files = client.listObjectsStartingWith(containerName, null, null, limit, marker)) {
-                for (FilesObject file : files) {
-                    map.put(file.getName(),
-                            new CloudFilesBinaryStoreEntry(client, containerName, file.getName(),
-                                    dateFormat.parse(file.getLastModified().substring(0, 25))));
-                    marker = file.getName();
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+        final XStream xStream = new XStream();
+        final File serializedStoreFile = new File(SERIALIZED_STORE_FILE);
+        if (serializedStoreFile.exists()) {
+            try {
+                map = (Map<String, BinaryStoreEntry>) xStream.fromXML(new FileInputStream(serializedStoreFile));
+                loadAndSaveExecutor.schedule(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            initInternal(dateFormat, xStream, serializedStoreFile);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Executors.newSingleThreadScheduledExecutor().schedule(new Runnable() {
+                                @Override
+                                public void run() {
+                                    init();
+                                }
+                            }, 5, TimeUnit.SECONDS);
+                        }
+                    }
+                }, 30, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                e.printStackTrace(System.err);
+            }
+        } else {
+            try {
+                initInternal(dateFormat, xStream, serializedStoreFile);
+            } catch (Exception e) {
+                e.printStackTrace(System.err);
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e1) {
+                    return;
+                }
+                init();
+            }
+        }
+    }
+
+    private void initInternal(SimpleDateFormat dateFormat, final XStream xStream, final File serializedStoreFile) throws IOException, ParseException {
+        //TODO replace with proper client initialisation...
+        client.login();
+        int limit = 1000;
+        String marker = null;
+        for (List<FilesObject> files = client.listObjectsStartingWith(containerName, null, null, limit, marker);
+             files.size() > 0; files = client.listObjectsStartingWith(containerName, null, null, limit, marker)) {
+            for (FilesObject file : files) {
+                map.put(file.getName(),
+                        new CloudFilesBinaryStoreEntry(client, containerName, file.getName(),
+                                dateFormat.parse(file.getLastModified().substring(0, 25))));
+                marker = file.getName();
+            }
+        }
+        loadAndSaveExecutor.scheduleWithFixedDelay(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    xStream.toXML(map, new FileOutputStream(serializedStoreFile));
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace(System.err);
                 }
             }
-        } catch (Exception e) {
-            //I've changed this so that it doesn't take down the whole of the server
-//            throw new RuntimeException(e);
-
-            //And we retry.
-            e.printStackTrace();
-            Executors.newSingleThreadScheduledExecutor().schedule(new Runnable() {
-                @Override
-                public void run() {
-                    init();
-                }
-            }, 5, TimeUnit.SECONDS);
-        }
+        }, 1, 1, TimeUnit.HOURS);
     }
 
 
