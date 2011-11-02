@@ -11,12 +11,13 @@ import java.util.Date;
  * Cloudfiles based implementation of binary store entry.
  */
 public class CloudFilesBinaryStoreEntry implements BinaryStoreEntry {
-    private final FilesClient client;
+    private transient FilesClient client;
     private final String containerName;
     private final String containerObject;
     private final Date lastModified;
     private final Object mutex = new Object();
     private int timesAccessed = 0;
+
 
     public CloudFilesBinaryStoreEntry(FilesClient client, String containerName, String containerObject, Date lastModified) {
         this.client = client;
@@ -45,5 +46,9 @@ public class CloudFilesBinaryStoreEntry implements BinaryStoreEntry {
     @Override
     public int getTimesAccessed() {
         return timesAccessed;
+    }
+
+    public void setClient(FilesClient client) {
+        this.client = client;
     }
 }

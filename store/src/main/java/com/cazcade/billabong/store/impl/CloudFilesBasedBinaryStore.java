@@ -95,6 +95,11 @@ public class CloudFilesBasedBinaryStore extends MapBasedBinaryStore implements M
         if (serializedStoreFile.exists()) {
             try {
                 map = (Map<String, BinaryStoreEntry>) xStream.fromXML(new FileInputStream(serializedStoreFile));
+                for (BinaryStoreEntry binaryStoreEntry : map.values()) {
+                    if (binaryStoreEntry instanceof CloudFilesBinaryStoreEntry) {
+                        ((CloudFilesBinaryStoreEntry) binaryStoreEntry).setClient(client);
+                    }
+                }
                 loadAndSaveExecutor.schedule(new Runnable() {
                     @Override
                     public void run() {
