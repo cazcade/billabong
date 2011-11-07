@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class CloudFilesBasedBinaryStore extends MapBasedBinaryStore implements MimeTypeAwareBinaryStore {
 
-    public static final String SERIALIZED_STORE_FILE = "billabong-file-store.xml";
+    public static final String SERIALIZED_STORE_FILE = "/tmp/billabong-file-store.xml";
     private final String containerName;
     private String defaultContainerContentType;
     private final FilesClient client;
