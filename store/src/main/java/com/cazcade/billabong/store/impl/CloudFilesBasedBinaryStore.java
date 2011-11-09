@@ -153,8 +153,10 @@ public class CloudFilesBasedBinaryStore extends MapBasedBinaryStore implements M
             @Override
             public void run() {
                 try {
-                    xStream.toXML(map, new FileOutputStream(serializedStoreFile));
-                } catch (FileNotFoundException e) {
+                    final FileOutputStream outputStream = new FileOutputStream(serializedStoreFile);
+                    xStream.toXML(map, outputStream);
+                    outputStream.close();
+                } catch (IOException e) {
                     e.printStackTrace(System.err);
                 }
             }
