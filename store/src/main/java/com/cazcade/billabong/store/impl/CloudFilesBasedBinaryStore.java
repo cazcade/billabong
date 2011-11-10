@@ -89,6 +89,16 @@ public class CloudFilesBasedBinaryStore extends MapBasedBinaryStore implements M
     }
 
     private void init() {
+        //TODO replace with proper client initialisation...
+        try {
+            final boolean login = client.login();
+            if(!login) {
+                throw new RuntimeException("Could not log into cloud files.");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
         final XStream xStream = new XStream();
         final File serializedStoreFile = new File(SERIALIZED_STORE_FILE);
@@ -136,8 +146,6 @@ public class CloudFilesBasedBinaryStore extends MapBasedBinaryStore implements M
     }
 
     private void initInternal(SimpleDateFormat dateFormat, final XStream xStream, final File serializedStoreFile) throws IOException, ParseException {
-        //TODO replace with proper client initialisation...
-        client.login();
         int limit = 1000;
         String marker = null;
         for (List<FilesObject> files = client.listObjectsStartingWith(containerName, null, null, limit, marker);
