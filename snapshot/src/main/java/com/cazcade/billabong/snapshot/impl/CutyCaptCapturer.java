@@ -21,7 +21,7 @@ public class CutyCaptCapturer implements Capturer {
     private int minWidth = 1024;
     private int minHeight = 768;
     private int maxWait = 10000;
-    private int delay = 0;
+    private int delay = 8000; //8 seconds delay for dynamic web pages to load (including boardcast)
     private long maxProcessWait = maxWait * 1000l + 10000l;
 
     private final DateHelper dateHelper;
