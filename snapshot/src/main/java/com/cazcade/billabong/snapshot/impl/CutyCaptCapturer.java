@@ -20,7 +20,7 @@ public class CutyCaptCapturer implements Capturer {
     private String outputPath = System.getProperty("cazcade.home", ".") + "/billabong/CutyCapt/tmp";
     private int minWidth = 1024;
     private int minHeight = 768;
-    private int maxWait = 10000;
+    private int maxWait = 30000;
     private int delay = 20000; //20 seconds delay for dynamic web pages to load (including boardcast)
     private long maxProcessWait = maxWait * 1000l + 10000l;
 
