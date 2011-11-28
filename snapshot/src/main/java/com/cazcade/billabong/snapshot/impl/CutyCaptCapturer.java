@@ -21,7 +21,7 @@ public class CutyCaptCapturer implements Capturer {
     private int minWidth = 1024;
     private int minHeight = 768;
     private int maxWait = 30000;
-    private int delay = 0;
+    private int delay = 2000;
     private long maxProcessWait = maxWait + 10000l;
 
     private final DateHelper dateHelper;
