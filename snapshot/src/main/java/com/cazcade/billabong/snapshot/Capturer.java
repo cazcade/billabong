@@ -8,8 +8,11 @@ import java.net.URI;
 public interface Capturer {
     /**
      * Get a snapshot of the URI as an image
+     *
+     *
      * @param uri The URI to take a snapshot of.
+     * @param delay The delay in seconds before the snapshot should be taken.
      * @return the snapshot that has been captured.
      */
-    public Snapshot getSnapshot(URI uri);
+    public Snapshot getSnapshot(URI uri, int delay);
 }

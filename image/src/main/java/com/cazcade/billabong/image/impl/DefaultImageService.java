@@ -45,11 +45,11 @@ public class DefaultImageService implements ImageService {
 
     @Override
     public CacheResponse getCacheURI(URI uri, ImageSize imageSize) {
-        return getCacheURI(uri, imageSize, true);
+        return getCacheURI(uri, imageSize, 0, true);
     }
 
     @Override
-    public CacheResponse getCacheURI(URI uri, ImageSize imageSize, boolean generate) {
+    public CacheResponse getCacheURI(URI uri, ImageSize imageSize, int delay, boolean generate) {
         //Generate the cache store key
         String storeKey = generateStoreKey(uri);
         long refreshIndicator = defaultRefresh;
@@ -57,11 +57,11 @@ public class DefaultImageService implements ImageService {
         BinaryStoreRetrievalResult result = store.retrieveFromStore(storeKey + imageSize);
         try{
             if(result.entryFound()){
-                refreshIndicator = pendingRenewal(result, storeKey, uri, generate);
+                refreshIndicator = pendingRenewal(result, storeKey, uri, delay, generate);
                 cacheURI = generateCacheURI(storeKey + imageSize);
             } else {
                 if(generate){
-                    cacheManager.generateCacheRequest(storeKey, uri);
+                    cacheManager.generateCacheRequest(storeKey, uri, delay);
                 }
             }
         } catch (RejectedExecutionException e){
@@ -81,7 +81,8 @@ public class DefaultImageService implements ImageService {
         BinaryStoreRetrievalResult result = store.retrieveFromStore(storeKey + imageSize);
         try{
             if(result.entryFound()){
-                refreshIndicator = pendingRenewal(result, storeKey, imageUri, generate);
+                refreshIndicator = pendingRenewal(result, storeKey, imageUri, 0 /*Images should be generated immediately*/,
+                generate);
                 cacheURI = generateCacheURI(storeKey + imageSize);
             } else {
                 if(generate){
@@ -132,10 +133,10 @@ public class DefaultImageService implements ImageService {
 
     }
 
-    private long pendingRenewal(BinaryStoreRetrievalResult result, String storeKey, URI uri, boolean generate) {
+    private long pendingRenewal(BinaryStoreRetrievalResult result, String storeKey, URI uri, int delay, boolean generate) {
         if (getRenewalValue(result) > renewalThreshold){
             if(generate){
-                cacheManager.generateCacheRequest(storeKey, uri);
+                cacheManager.generateCacheRequest(storeKey, uri, delay);
             }
             return defaultRefresh;
         }

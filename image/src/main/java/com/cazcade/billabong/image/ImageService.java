@@ -25,9 +25,10 @@ public interface ImageService {
      * @param uri The URI to retrieve from the cache.
      * @param imageSize The size of the image to retrieve.
      * @param generate whether to generate the entry in the cache.
+     * @param delay the delay in seconds before generating snapshots of web pages.
      * @return The response to the cache request.
      */
-    public CacheResponse getCacheURI(URI uri, ImageSize imageSize, boolean generate);
+    public CacheResponse getCacheURI(URI uri, ImageSize imageSize, int delay, boolean generate);
 
     /**
      * This method returns a URI that indicates how to retrieve the cached image.

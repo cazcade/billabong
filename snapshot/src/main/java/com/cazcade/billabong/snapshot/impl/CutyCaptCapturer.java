@@ -33,8 +33,9 @@ public class CutyCaptCapturer implements Capturer {
     }
 
     @Override
-    public Snapshot getSnapshot(URI uri) {
+    public Snapshot getSnapshot(URI uri, final int delayInSeconds) {
         initOutputPath();
+        this.delay= delayInSeconds*1000;
         UUID uuid = UUID.randomUUID();
         File outputFile = new File(outputPath, uuid.toString() + "." + outputType);
         outputFile.getParentFile().mkdirs();
@@ -45,7 +46,7 @@ public class CutyCaptCapturer implements Capturer {
                 "--min-width=" + minWidth,
                 "--min-height=" + minHeight,
                 "--max-wait=" + maxWait,
-                "--delay=" + delay
+                "--delay=" + this.delay
                 );
 
         processBuilder.redirectErrorStream(true);

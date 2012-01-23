@@ -47,10 +47,10 @@ public class DefaultCacheManager implements CacheManager {
     }
 
     @Override
-    public void generateCacheRequest(String storeKey, URI uri) {
+    public void generateCacheRequest(String storeKey, URI uri, int delay) {
         synchronized(mutex){
             if(!futureMap.containsKey(storeKey)){
-                futureMap.put(storeKey, executor.submit(new CacheRequest(storeKey, uri)));
+                futureMap.put(storeKey, executor.submit(new CacheRequest(storeKey, uri, delay)));
             }
         }
     }
@@ -67,18 +67,20 @@ public class DefaultCacheManager implements CacheManager {
     private class CacheRequest implements Runnable {
         private final String storeKey;
         private final URI uri;
+        private int delay;
 
-        private CacheRequest(String storeKey, URI uri) {
+        private CacheRequest(String storeKey, URI uri, int delay) {
             this.storeKey = storeKey;
             this.uri = uri;
 
+            this.delay = delay;
         }
 
         @Override
         public void run() {
             try {
                 //Do work
-                Snapshot snapshot = capturer.getSnapshot(uri);
+                Snapshot snapshot = capturer.getSnapshot(uri, delay );
                 System.out.println("Got Snapshot: " + uri);
                 long time = System.currentTimeMillis();
                 BufferedImage image = ImageIO.read(snapshot.getImage());
@@ -119,7 +121,7 @@ public class DefaultCacheManager implements CacheManager {
         public void run() {
             try {
                 //Do work
-                Snapshot snapshot = imageCapturer.getSnapshot(uri);
+                Snapshot snapshot = imageCapturer.getSnapshot(uri, 0);
                 System.out.println("Got Snapshot: " + uri);
                 long time = System.currentTimeMillis();
                 BufferedImage image = ImageIO.read(snapshot.getImage());
