@@ -44,7 +44,9 @@ public class CutyCaptCapturer implements Capturer {
                 "--min-width=" + minWidth,
                 "--min-height=" + minHeight,
                 "--max-wait=" + maxWait,
-                "--delay=" + delayInSeconds*1000
+                "--delay=" + delayInSeconds*1000,
+                "--user-agent='Billabong 1.1 (CutyCapt) Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_7; da-dk) AppleWebKit/533.211 "+
+                "(KHTML, like Gecko) Version/5.0.5 Safari/533.21.1'"
                 );
 
         processBuilder.redirectErrorStream(true);
