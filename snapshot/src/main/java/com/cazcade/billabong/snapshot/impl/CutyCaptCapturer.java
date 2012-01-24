@@ -20,7 +20,7 @@ public class CutyCaptCapturer implements Capturer {
     private String outputPath = System.getProperty("cazcade.home", ".") + "/billabong/CutyCapt/tmp";
     private int minWidth = 1024;
     private int minHeight = 768;
-    private int maxWait = 30000;
+    private int maxWait = 0;
     private int delay = 2000;
     private long maxProcessWait = maxWait + 10000l;
 
@@ -35,7 +35,6 @@ public class CutyCaptCapturer implements Capturer {
     @Override
     public Snapshot getSnapshot(URI uri, final int delayInSeconds) {
         initOutputPath();
-        this.delay= delayInSeconds*1000;
         UUID uuid = UUID.randomUUID();
         File outputFile = new File(outputPath, uuid.toString() + "." + outputType);
         outputFile.getParentFile().mkdirs();
@@ -46,7 +45,7 @@ public class CutyCaptCapturer implements Capturer {
                 "--min-width=" + minWidth,
                 "--min-height=" + minHeight,
                 "--max-wait=" + maxWait,
-                "--delay=" + this.delay
+                "--delay=" + delayInSeconds*1000
                 );
 
         processBuilder.redirectErrorStream(true);
