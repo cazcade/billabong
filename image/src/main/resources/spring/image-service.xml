@@ -260,8 +260,15 @@
 
     </bean>
 
-    <bean id="capturer" class="com.cazcade.billabong.snapshot.impl.CutyCaptCapturer">
-        <constructor-arg index="0" value="CutyCapt"/>
+    <!--<bean id="capturer" class="com.cazcade.billabong.snapshot.impl.CutyCaptCapturer">-->
+        <!--<constructor-arg index="0" value="CutyCapt"/>-->
+        <!--<constructor-arg index="1" ref="dateHelper"/>-->
+        <!--<property name="minWidth" value="1024"/>-->
+        <!--<property name="minHeight" value="768"/>-->
+    <!--</bean>-->
+
+    <bean id="capturer" class="com.cazcade.billabong.snapshot.impl.WKHTMLCapturer">
+        <constructor-arg index="0" value="wkhtmltoimage"/>
         <constructor-arg index="1" ref="dateHelper"/>
         <property name="minWidth" value="1024"/>
         <property name="minHeight" value="768"/>
