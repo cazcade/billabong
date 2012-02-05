@@ -16,7 +16,7 @@ import java.util.UUID;
  */
 public class WKHTMLCapturer implements Capturer {
     private final String executable;
-    private String outputType = "jpg";
+    private String outputType = "png";
     private String outputPath = System.getProperty("cazcade.home", ".") + "/billabong/wkhtml/tmp";
     private int minWidth = 1024;
     private int minHeight = 768;
@@ -45,9 +45,9 @@ public class WKHTMLCapturer implements Capturer {
                 "--custom-header","User-Agent","Billabong 1.1 (CutyCapt) Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) " +
                                                "AppleWebKit/534.52.7 (KHTML, " +
                 "like Gecko) Version/5.1.2 Safari/534.52.7",
-                "--no-stop-slow-scripts",
+//                "--no-stop-slow-scripts",
                 //TODO: impleent this as a parameter to the method, i.e. wait until status == 'xyz'
-                "--window-status","snapshot-loaded",
+//                "--window-status","snapshot-loaded",
                 "--javascript-delay", String.valueOf(delayInSeconds * 1000),
 //                "--user-agent='Billabong 1.1 (CutyCapt) Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_7; da-dk) AppleWebKit/533.211 "+
 //                "(KHTML, like Gecko) Version/5.0.5 Safari/533.21.1'"
