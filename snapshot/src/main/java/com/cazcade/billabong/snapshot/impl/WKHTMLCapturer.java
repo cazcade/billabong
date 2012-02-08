@@ -24,6 +24,9 @@ public class WKHTMLCapturer implements Capturer {
     private long maxProcessWait = maxWait + 10000l;
 
     private final DateHelper dateHelper;
+    private final String userAgent = "Billabong 1.1 (WKHTMLImage) Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) " +
+                                     "AppleWebKit/534.52.7 (KHTML, " +
+                                     "like Gecko) Version/5.1.2 Safari/534.52.7";
 
     @SuppressWarnings({"SameParameterValue", "SameParameterValue"})
     public WKHTMLCapturer(String executable, DateHelper dateHelper) {
@@ -32,29 +35,39 @@ public class WKHTMLCapturer implements Capturer {
     }
 
     @Override
-    public Snapshot getSnapshot(URI uri, final int delayInSeconds) {
+    public Snapshot getSnapshot(URI uri, final int delayInSeconds, String waitForWindowStatus) {
         initOutputPath();
         UUID uuid = UUID.randomUUID();
         File outputFile = new File(outputPath, uuid.toString() + "." + outputType);
         outputFile.getParentFile().mkdirs();
-        ProcessBuilder processBuilder = new ProcessBuilder(
-                executable,
-                "--width", String.valueOf(minWidth),
-                "--height", String.valueOf(minHeight),
-                "--use-xserver",
-                "--custom-header","User-Agent","Billabong 1.1 (CutyCapt) Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) " +
-                                               "AppleWebKit/534.52.7 (KHTML, " +
-                "like Gecko) Version/5.1.2 Safari/534.52.7",
-//                "--no-stop-slow-scripts",
-                //TODO: impleent this as a parameter to the method, i.e. wait until status == 'xyz'
-//                "--window-status","snapshot-loaded",
-                "--javascript-delay", String.valueOf(delayInSeconds * 1000),
-//                "--user-agent='Billabong 1.1 (CutyCapt) Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_7; da-dk) AppleWebKit/533.211 "+
-//                "(KHTML, like Gecko) Version/5.0.5 Safari/533.21.1'"
-                uri.toString(),
-                outputFile.toString()
-        );
+        final String delayString = String.valueOf(delayInSeconds * 1000);
+        ProcessBuilder processBuilder;
+        if (waitForWindowStatus != null) {
+            processBuilder = new ProcessBuilder(
+                    executable,
+                    "--width", String.valueOf(minWidth),
+                    "--height", String.valueOf(minHeight),
+                    "--use-xserver",
+                    "--custom-header", "User-Agent", userAgent,
+                    "--no-stop-slow-scripts",
+                    "--window-status", waitForWindowStatus,
 
+                    uri.toString(),
+                    outputFile.toString()
+            );
+        } else {
+            processBuilder = new ProcessBuilder(
+                    executable,
+                    "--width", String.valueOf(minWidth),
+                    "--height", String.valueOf(minHeight),
+                    "--use-xserver",
+                    "--custom-header", "User-Agent", userAgent,
+//                "--no-stop-slow-scripts",
+                    "--javascript-delay", delayString,
+                    uri.toString(),
+                    outputFile.toString()
+            );
+        }
         processBuilder.redirectErrorStream(true);
         try {
             Process captureProcess = processBuilder.start();

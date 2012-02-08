@@ -7,7 +7,7 @@ import java.net.URI;
  */
 public interface CacheManager {
 
-    public void generateCacheRequest(String storeKey, URI uri, int delay);
+    public void generateCacheRequest(String storeKey, URI uri, int delay, String waitForStatus);
 
     public void generateImageCacheRequest(String storeKey, URI uri);
 }

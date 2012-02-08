@@ -47,10 +47,10 @@ public class DefaultCacheManager implements CacheManager {
     }
 
     @Override
-    public void generateCacheRequest(String storeKey, URI uri, int delay) {
+    public void generateCacheRequest(String storeKey, URI uri, int delay, String waitForStatus) {
         synchronized(mutex){
             if(!futureMap.containsKey(storeKey)){
-                futureMap.put(storeKey, executor.submit(new CacheRequest(storeKey, uri, delay)));
+                futureMap.put(storeKey, executor.submit(new CacheRequest(storeKey, uri, delay, waitForStatus)));
             }
         }
     }
@@ -68,19 +68,21 @@ public class DefaultCacheManager implements CacheManager {
         private final String storeKey;
         private final URI uri;
         private int delay;
+        private String waitForStatus;
 
-        private CacheRequest(String storeKey, URI uri, int delay) {
+        private CacheRequest(String storeKey, URI uri, int delay, String waitForStatus) {
             this.storeKey = storeKey;
             this.uri = uri;
 
             this.delay = delay;
+            this.waitForStatus = waitForStatus;
         }
 
         @Override
         public void run() {
             try {
                 //Do work
-                Snapshot snapshot = capturer.getSnapshot(uri, delay );
+                Snapshot snapshot = capturer.getSnapshot(uri, delay, waitForStatus);
                 System.out.println("Got Snapshot: " + uri);
                 long time = System.currentTimeMillis();
                 BufferedImage image = ImageIO.read(snapshot.getImage());
@@ -121,7 +123,7 @@ public class DefaultCacheManager implements CacheManager {
         public void run() {
             try {
                 //Do work
-                Snapshot snapshot = imageCapturer.getSnapshot(uri, 0);
+                Snapshot snapshot = imageCapturer.getSnapshot(uri, 0, null);
                 System.out.println("Got Snapshot: " + uri);
                 long time = System.currentTimeMillis();
                 BufferedImage image = ImageIO.read(snapshot.getImage());

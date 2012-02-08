@@ -32,7 +32,7 @@ public class CutyCaptCapturer implements Capturer {
     }
 
     @Override
-    public Snapshot getSnapshot(URI uri, final int delayInSeconds) {
+    public Snapshot getSnapshot(URI uri, final int delayInSeconds, String waitForWindowStatus) {
         initOutputPath();
         UUID uuid = UUID.randomUUID();
         File outputFile = new File(outputPath, uuid.toString() + "." + outputType);

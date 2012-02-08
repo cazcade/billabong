@@ -11,7 +11,7 @@ import java.net.URI;
 public class ImageURICapturer implements Capturer {
 
     @Override
-    public Snapshot getSnapshot(URI uri, int delay) {
+    public Snapshot getSnapshot(URI uri, int delay, String waitForWindowStatus) {
         return new ImageUriSnapshot(uri);
     }
 }
