@@ -19,7 +19,7 @@ public class WKHTMLCapturer implements Capturer {
     private String outputType = "png";
     private String outputPath = System.getProperty("cazcade.home", ".") + "/billabong/wkhtml/tmp";
     private int maxWidth = 1024;
-    private int maxHeight = 4096;
+    private int maxHeight = 0;
 
     private final DateHelper dateHelper;
     private final String userAgent = "Billabong 1.1 (WKHTMLImage) Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) " +
