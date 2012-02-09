@@ -50,11 +50,12 @@ public class WKHTMLCapturer implements Capturer {
                     "--height", String.valueOf(minHeight),
                     "--use-xserver",
                     "--custom-header", "User-Agent", userAgent,
+                    //we don't stop slow scripts because (in theory) we're waiting on a window.status value
                     "--no-stop-slow-scripts",
                     //todo: add back when this is fixed http://code.google.com/p/wkhtmltopdf/issues/detail?id=648
-//                    "--window-status", waitForWindowStatus,
+                    "--window-status", waitForWindowStatus,
                     //todo: remove again when window-status works.
-                    "--javascript-delay", delayString,
+//                    "--javascript-delay", delayString,
                     uri.toString(),
                     outputFile.toString()
             );
@@ -66,7 +67,6 @@ public class WKHTMLCapturer implements Capturer {
                     "--height", String.valueOf(minHeight),
                     "--use-xserver",
                     "--custom-header", "User-Agent", userAgent,
-//                "--no-stop-slow-scripts",
                     "--javascript-delay", delayString,
                     uri.toString(),
                     outputFile.toString()
