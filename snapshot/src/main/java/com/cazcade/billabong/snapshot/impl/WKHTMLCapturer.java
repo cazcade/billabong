@@ -18,8 +18,8 @@ public class WKHTMLCapturer implements Capturer {
     private final String executable;
     private String outputType = "png";
     private String outputPath = System.getProperty("cazcade.home", ".") + "/billabong/wkhtml/tmp";
-    private int minWidth = 1024;
-    private int minHeight = 768;
+    private int maxWidth = 1024;
+    private int maxHeight = 4096;
 
     private final DateHelper dateHelper;
     private final String userAgent = "Billabong 1.1 (WKHTMLImage) Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) " +
@@ -46,15 +46,15 @@ public class WKHTMLCapturer implements Capturer {
         if (waitForWindowStatus != null) {
             processBuilder = new ProcessBuilder(
                     executable,
-                    "--width", String.valueOf(minWidth),
-                    "--height", String.valueOf(minHeight),
+                    "--width", String.valueOf(maxWidth),
+//                    "--crop-w", String.valueOf(minWidth),
+                    "--height", String.valueOf(maxHeight),
+//                    "--crop-h", String.valueOf(minHeight),
                     "--use-xserver",
                     "--custom-header", "User-Agent", userAgent,
                     //we don't stop slow scripts because (in theory) we're waiting on a window.status value
                     "--no-stop-slow-scripts",
-                    //todo: add back when this is fixed http://code.google.com/p/wkhtmltopdf/issues/detail?id=648
                     "--window-status", waitForWindowStatus,
-                    //todo: remove again when window-status works.
 //                    "--javascript-delay", delayString,
                     uri.toString(),
                     outputFile.toString()
@@ -63,8 +63,10 @@ public class WKHTMLCapturer implements Capturer {
         else {
             processBuilder = new ProcessBuilder(
                     executable,
-                    "--width", String.valueOf(minWidth),
-                    "--height", String.valueOf(minHeight),
+                    "--width", String.valueOf(maxWidth),
+//                    "--crop-w", String.valueOf(minWidth),
+                    "--height", String.valueOf(maxHeight),
+//                    "--crop-h", String.valueOf(minHeight),
                     "--use-xserver",
                     "--custom-header", "User-Agent", userAgent,
                     "--javascript-delay", delayString,
@@ -136,12 +138,12 @@ public class WKHTMLCapturer implements Capturer {
         }
     }
 
-    public void setMinWidth(int minWidth) {
-        this.minWidth = minWidth;
+    public void setMaxWidth(int maxWidth) {
+        this.maxWidth = maxWidth;
     }
 
-    public void setMinHeight(int minHeight) {
-        this.minHeight = minHeight;
+    public void setMaxHeight(int maxHeight) {
+        this.maxHeight = maxHeight;
     }
 
     public void setMaxWait(int maxWait) {
