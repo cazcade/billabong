@@ -51,8 +51,10 @@ public class WKHTMLCapturer implements Capturer {
                     "--use-xserver",
                     "--custom-header", "User-Agent", userAgent,
                     "--no-stop-slow-scripts",
-                    "--window-status", waitForWindowStatus,
-
+                    //todo: add back when this is fixed http://code.google.com/p/wkhtmltopdf/issues/detail?id=648
+//                    "--window-status", waitForWindowStatus,
+                    //todo: remove again when window-status works.
+                    "--javascript-delay", delayString,
                     uri.toString(),
                     outputFile.toString()
             );
