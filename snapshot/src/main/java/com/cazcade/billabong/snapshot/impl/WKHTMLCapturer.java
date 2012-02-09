@@ -20,13 +20,12 @@ public class WKHTMLCapturer implements Capturer {
     private String outputPath = System.getProperty("cazcade.home", ".") + "/billabong/wkhtml/tmp";
     private int minWidth = 1024;
     private int minHeight = 768;
-    private int maxWait = 0;
-    private long maxProcessWait = maxWait + 10000l;
 
     private final DateHelper dateHelper;
     private final String userAgent = "Billabong 1.1 (WKHTMLImage) Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) " +
                                      "AppleWebKit/534.52.7 (KHTML, " +
                                      "like Gecko) Version/5.1.2 Safari/534.52.7";
+    private int maxWait = 60 * 1000;
 
     @SuppressWarnings({"SameParameterValue", "SameParameterValue"})
     public WKHTMLCapturer(String executable, DateHelper dateHelper) {
@@ -36,6 +35,8 @@ public class WKHTMLCapturer implements Capturer {
 
     @Override
     public Snapshot getSnapshot(URI uri, final int delayInSeconds, String waitForWindowStatus) {
+        long maxProcessWait = (delayInSeconds * 1000) + maxWait;
+
         initOutputPath();
         UUID uuid = UUID.randomUUID();
         File outputFile = new File(outputPath, uuid.toString() + "." + outputType);
@@ -55,7 +56,8 @@ public class WKHTMLCapturer implements Capturer {
                     uri.toString(),
                     outputFile.toString()
             );
-        } else {
+        }
+        else {
             processBuilder = new ProcessBuilder(
                     executable,
                     "--width", String.valueOf(minWidth),
@@ -101,6 +103,9 @@ public class WKHTMLCapturer implements Capturer {
 
                 }
                 System.err.println(output);
+                if (!done) {
+                    captureProcess.destroy();
+                }
             } finally {
                 inputStream.close();
             }
@@ -142,7 +147,4 @@ public class WKHTMLCapturer implements Capturer {
     }
 
 
-    public void setMaxProcessWait(long maxProcessWait) {
-        this.maxProcessWait = maxProcessWait;
-    }
 }
