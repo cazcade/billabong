@@ -198,7 +198,7 @@ public class CloudFilesBasedBinaryStore extends MapBasedBinaryStore implements M
 
 
     public static void main(String[] args) throws Exception {
-        FilesClient client = new FilesClient("cazcade", "bee5705ff5df90d7731eabf83b05f7a5");
+        FilesClient client = new FilesClient(System.getProperty("cloudfiles.username"), System.getProperty("cloudfiles.apikey"));
 
         boolean loggedin = client.login();
         if (loggedin) {
