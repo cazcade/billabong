@@ -109,18 +109,12 @@
     <bean id="store" class="com.cazcade.billabong.store.impl.CloudFilesBasedBinaryStore">
         <constructor-arg index="0" value="public"/>
         <constructor-arg index="1" value="image/jpeg"/>
-        <constructor-arg index="2" ref="filesClient"/>
     </bean>
 
-    <bean id="filesClient" class="com.rackspacecloud.client.cloudfiles.FilesClient">
-        <constructor-arg index="0" value="cazcade"/>
-        <constructor-arg index="1" value="bee5705ff5df90d7731eabf83b05f7a5"/>
-    </bean>
 
     <bean id="userContentBinaryStore" class="com.cazcade.billabong.store.impl.CloudFilesBasedBinaryStore">
         <constructor-arg index="0" value="user-content"/>
         <constructor-arg index="1" value="application/x-cazcade"/>
-        <constructor-arg index="2" ref="filesClient"/>
     </bean>
 
     <bean id="userContentStore" class="com.cazcade.billabong.store.impl.UserContentStore">

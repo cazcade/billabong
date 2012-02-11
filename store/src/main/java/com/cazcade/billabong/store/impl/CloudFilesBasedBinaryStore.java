@@ -48,10 +48,10 @@ public class CloudFilesBasedBinaryStore extends MapBasedBinaryStore implements M
     private static final Map<String, String> EMPTY_METADATA = Collections.emptyMap();
     private ScheduledExecutorService loadAndSaveExecutor = Executors.newSingleThreadScheduledExecutor();
 
-    public CloudFilesBasedBinaryStore(String containerName, String defaultContainerContentType, FilesClient client) {
+    public CloudFilesBasedBinaryStore(String containerName, String defaultContainerContentType) {
         this.containerName = containerName;
         this.defaultContainerContentType = defaultContainerContentType;
-        this.client = client;
+        this.client = new FilesClient(System.getProperty("cloudfiles.username"), System.getProperty("cloudfiles.apikey"));
         init();
     }
 
