@@ -1,3 +1,19 @@
+/*
+ * Copyright 2012 Cazcade Limited
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.cazcade.billabong.store.impl;
 
 import com.cazcade.billabong.common.impl.StaticTestDateHelper;
@@ -60,8 +76,8 @@ public class FileBasedBinaryStoreTest {
 
         //last modified only accurate to the nearest second last 3 digits 000.
 
-        Assert.assertTrue(Math.abs(lastModifiedDate.getTime() - storeFile.lastModified()) <=1000l);
-        Assert.assertTrue(Math.abs(lastModifiedDate.getTime() - storeFile2.lastModified()) <=1000l);
+        Assert.assertTrue(Math.abs(lastModifiedDate.getTime() - storeFile.lastModified()) <= 1000l);
+        Assert.assertTrue(Math.abs(lastModifiedDate.getTime() - storeFile2.lastModified()) <= 1000l);
     }
 
     @Test
@@ -96,7 +112,7 @@ public class FileBasedBinaryStoreTest {
 
     @After
     public void cleanup() {
-        for(File fileToDelete : storeDirectory.listFiles()){
+        for (File fileToDelete : storeDirectory.listFiles()) {
             fileToDelete.delete();
         }
 

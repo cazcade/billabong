@@ -1,11 +1,26 @@
+/*
+ * Copyright 2012 Cazcade Limited
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.cazcade.billabong.processing.impl;
 
 import com.cazcade.billabong.processing.Scaler;
 import com.cazcade.billabong.processing.Scaling;
 import com.cazcade.billabong.processing.Tuple2dInteger;
 
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 /**
@@ -21,6 +36,7 @@ public class DefaultScaler implements Scaler {
 
     /**
      * Override the default Bicubic render hint.
+     *
      * @param hint The hint from java.awt.RenderingHints to use to render the scaled image.
      */
     public DefaultScaler(Object hint) {
@@ -29,7 +45,10 @@ public class DefaultScaler implements Scaler {
 
     @Override
     public BufferedImage scaleImage(BufferedImage imageToScale, Scaling scaling) {
-        Tuple2dInteger scaledDimensions = scaling.getScaledSize(new Tuple2dInteger(imageToScale.getWidth(), imageToScale.getHeight()));
+        Tuple2dInteger scaledDimensions = scaling.getScaledSize(new Tuple2dInteger(imageToScale.getWidth(),
+                                                                                   imageToScale.getHeight()
+        )
+                                                               );
         BufferedImage scaledBI = new BufferedImage(scaledDimensions.getX(), scaledDimensions.getY(), BufferedImage.TYPE_INT_RGB);
         Graphics2D g = scaledBI.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, hint);

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2012 Cazcade Limited
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.cazcade.billabong.snapshot.impl;
 
 import com.cazcade.billabong.common.DateHelper;
@@ -44,34 +60,37 @@ public class CutyCaptCapturer implements Capturer {
                 "--min-width=" + minWidth,
                 "--min-height=" + minHeight,
                 "--max-wait=" + maxWait,
-                "--delay=" + delayInSeconds*1000,
-                "--user-agent='Billabong 1.1 (CutyCapt) Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_7; da-dk) AppleWebKit/533.211 "+
+                "--delay=" + delayInSeconds * 1000,
+                "--user-agent='Billabong 1.1 (CutyCapt) Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_7; da-dk) AppleWebKit/533.211 " +
                 "(KHTML, like Gecko) Version/5.0.5 Safari/533.21.1'"
-                );
+        );
 
         processBuilder.redirectErrorStream(true);
         try {
             Process captureProcess = processBuilder.start();
             InputStreamReader inputStream = new InputStreamReader(
-                    new BufferedInputStream(captureProcess.getInputStream()));
-            try{
+                    new BufferedInputStream(captureProcess.getInputStream())
+            );
+            try {
                 boolean done = false;
                 long maxEndTime = System.currentTimeMillis() + maxProcessWait;
                 StringBuffer output = new StringBuffer();
                 char[] buffer = new char[4096];
-                while (!done && System.currentTimeMillis() < maxEndTime){
+                while (!done && System.currentTimeMillis() < maxEndTime) {
                     int length = inputStream.read(buffer);
-                    if(length >= 0){
+                    if (length >= 0) {
                         output.append(buffer, 0, length);
-                    } else {
-                        try{
+                    }
+                    else {
+                        try {
                             int result = captureProcess.exitValue();
                             done = true;
-                            if(result != 0){
+                            if (result != 0) {
                                 throw new RuntimeException("Failed to capture URI image successfully:\n" +
-                                        uri + "\n" + output.toString());
+                                                           uri + "\n" + output.toString()
+                                );
                             }
-                        } catch (IllegalThreadStateException e){
+                        } catch (IllegalThreadStateException e) {
                             //expected - work not yet done...
                             //The only case I've yet found where an empty catch block may be justified.
                         }
@@ -79,7 +98,7 @@ public class CutyCaptCapturer implements Capturer {
 
                 }
                 System.err.println(output);
-            } finally{
+            } finally {
                 inputStream.close();
             }
         } catch (IOException e) {
@@ -101,8 +120,8 @@ public class CutyCaptCapturer implements Capturer {
     }
 
     private void initOutputPath() {
-        File outputPathFile = new File(outputPath) ;
-        if(!outputPathFile.exists()){
+        File outputPathFile = new File(outputPath);
+        if (!outputPathFile.exists()) {
             outputPathFile.mkdirs();
         }
     }

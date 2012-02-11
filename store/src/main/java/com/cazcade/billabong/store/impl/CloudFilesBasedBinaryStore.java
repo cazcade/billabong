@@ -1,3 +1,19 @@
+/*
+ * Copyright 2012 Cazcade Limited
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.cazcade.billabong.store.impl;
 
 import com.cazcade.billabong.store.BinaryStoreEntry;
@@ -47,7 +63,8 @@ public class CloudFilesBasedBinaryStore extends MapBasedBinaryStore implements M
                 return true;
             }
             return false;
-        } else {
+        }
+        else {
             addToMap(storeKey, storeEntry, mimeType);
             return true;
         }
@@ -68,7 +85,8 @@ public class CloudFilesBasedBinaryStore extends MapBasedBinaryStore implements M
                 }
             }
             map.put(storeKey, new CloudFilesBinaryStoreEntry(client, containerName, storeKey, dateHelper.current()));
-        } else {
+        }
+        else {
             map.remove(storeKey);
             try {
                 client.deleteObject(containerName, storeKey);
@@ -92,7 +110,7 @@ public class CloudFilesBasedBinaryStore extends MapBasedBinaryStore implements M
         //TODO replace with proper client initialisation...
         try {
             final boolean login = client.login();
-            if(!login) {
+            if (!login) {
                 throw new RuntimeException("Could not log into cloud files.");
             }
         } catch (IOException e) {
@@ -123,14 +141,17 @@ public class CloudFilesBasedBinaryStore extends MapBasedBinaryStore implements M
                                 public void run() {
                                     init();
                                 }
-                            }, 5, TimeUnit.SECONDS);
+                            }, 5, TimeUnit.SECONDS
+                                                                                 );
                         }
                     }
-                }, 30, TimeUnit.SECONDS);
+                }, 30, TimeUnit.SECONDS
+                                            );
             } catch (Exception e) {
                 e.printStackTrace(System.err);
             }
-        } else {
+        }
+        else {
             try {
                 initInternal(dateFormat, xStream, serializedStoreFile);
             } catch (Exception e) {
@@ -145,7 +166,8 @@ public class CloudFilesBasedBinaryStore extends MapBasedBinaryStore implements M
         }
     }
 
-    private void initInternal(SimpleDateFormat dateFormat, final XStream xStream, final File serializedStoreFile) throws IOException, ParseException {
+    private void initInternal(SimpleDateFormat dateFormat, final XStream xStream, final File serializedStoreFile)
+            throws IOException, ParseException {
         int limit = 1000;
         String marker = null;
         for (List<FilesObject> files = client.listObjectsStartingWith(containerName, null, null, limit, marker);
@@ -153,7 +175,9 @@ public class CloudFilesBasedBinaryStore extends MapBasedBinaryStore implements M
             for (FilesObject file : files) {
                 map.put(file.getName(),
                         new CloudFilesBinaryStoreEntry(client, containerName, file.getName(),
-                                dateFormat.parse(file.getLastModified().substring(0, 25))));
+                                                       dateFormat.parse(file.getLastModified().substring(0, 25))
+                        )
+                       );
                 marker = file.getName();
             }
         }
@@ -168,7 +192,8 @@ public class CloudFilesBasedBinaryStore extends MapBasedBinaryStore implements M
                     e.printStackTrace(System.err);
                 }
             }
-        }, 1, 1, TimeUnit.HOURS);
+        }, 1, 1, TimeUnit.HOURS
+                                                  );
     }
 
 

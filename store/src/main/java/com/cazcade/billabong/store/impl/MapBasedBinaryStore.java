@@ -1,3 +1,19 @@
+/*
+ * Copyright 2012 Cazcade Limited
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.cazcade.billabong.store.impl;
 
 import com.cazcade.billabong.common.DateHelper;
@@ -27,13 +43,14 @@ public class MapBasedBinaryStore implements BinaryStore {
 
     @Override
     public final boolean placeInStore(String storeKey, InputStream storeEntry, boolean override) {
-        if(map.containsKey(storeKey)){
-            if(override){
+        if (map.containsKey(storeKey)) {
+            if (override) {
                 addToMap(storeKey, storeEntry);
                 return true;
             }
             return false;
-        } else {
+        }
+        else {
             addToMap(storeKey, storeEntry);
             return true;
         }
@@ -42,14 +59,16 @@ public class MapBasedBinaryStore implements BinaryStore {
     /**
      * Basic implementation of addToMap that uses a simple InMemoryBinaryStoreEntry. This method can be overridden to
      * allow other entry types to be used.
+     *
      * @param storeKey The key to use for adding the entry.
-     * @param data The data to be held in the entry.
+     * @param data     The data to be held in the entry.
      */
     protected void addToMap(String storeKey, InputStream data) {
         try {
-            if(data != null) {
+            if (data != null) {
                 map.put(storeKey, new InMemoryBinaryStoreEntry(dateHelper.current(), IOUtils.toByteArray(data)));
-            } else {
+            }
+            else {
                 map.remove(storeKey);
             }
         } catch (IOException e) {

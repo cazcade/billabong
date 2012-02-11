@@ -1,3 +1,19 @@
+/*
+ * Copyright 2012 Cazcade Limited
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.cazcade.billabong.image.impl;
 
 import com.cazcade.billabong.common.DateHelper;
@@ -34,7 +50,8 @@ public class DefaultImageService implements ImageService {
     private final HashMap<String, Tuple2dInteger> imageUriSizeMap;
 
 
-    public DefaultImageService(URI holdingURI, String cachePrefix, BinaryStore store, CacheManager cacheManager, HashMap<String, Tuple2dInteger> uriSizeMap, HashMap<String, Tuple2dInteger> imageUriSizeMap) {
+    public DefaultImageService(URI holdingURI, String cachePrefix, BinaryStore store, CacheManager cacheManager,
+                               HashMap<String, Tuple2dInteger> uriSizeMap, HashMap<String, Tuple2dInteger> imageUriSizeMap) {
         this.holdingURI = holdingURI;
         this.cachePrefix = cachePrefix;
         this.store = store;
@@ -55,16 +72,17 @@ public class DefaultImageService implements ImageService {
         long refreshIndicator = defaultRefresh;
         URI cacheURI = holdingURI;
         BinaryStoreRetrievalResult result = store.retrieveFromStore(storeKey + imageSize);
-        try{
-            if(result.entryFound()){
+        try {
+            if (result.entryFound()) {
                 refreshIndicator = pendingRenewal(result, storeKey, uri, delay, waitForStatus, generate);
                 cacheURI = generateCacheURI(storeKey + imageSize);
-            } else {
-                if(generate){
+            }
+            else {
+                if (generate) {
                     cacheManager.generateCacheRequest(storeKey, uri, delay, waitForStatus);
                 }
             }
-        } catch (RejectedExecutionException e){
+        } catch (RejectedExecutionException e) {
             throw new RuntimeException(e);
         }
 
@@ -79,17 +97,19 @@ public class DefaultImageService implements ImageService {
         long refreshIndicator = defaultRefresh;
         URI cacheURI = holdingURI;
         BinaryStoreRetrievalResult result = store.retrieveFromStore(storeKey + imageSize);
-        try{
-            if(result.entryFound()){
+        try {
+            if (result.entryFound()) {
                 refreshIndicator = pendingRenewal(result, storeKey, imageUri, 0 /*Images should be generated immediately*/,
-                                                  null, generate);
+                                                  null, generate
+                                                 );
                 cacheURI = generateCacheURI(storeKey + imageSize);
-            } else {
-                if(generate){
+            }
+            else {
+                if (generate) {
                     cacheManager.generateImageCacheRequest(storeKey, imageUri);
                 }
             }
-        } catch (RejectedExecutionException e){
+        } catch (RejectedExecutionException e) {
             throw new RuntimeException(e);
         }
 
@@ -121,7 +141,7 @@ public class DefaultImageService implements ImageService {
     private String generateStoreKey(URI uri) {
         try {
             String storeKey = URLEncoder.encode(uri.toString(), encoding).replace('%', 'P');
-            if (storeKey.getBytes(encoding).length > 1024){
+            if (storeKey.getBytes(encoding).length > 1024) {
                 // TODO this check is in place to ensure that we do not exceed the limits imposed by CloudFiles. Replace
                 // with proper handling - probably generate an UUID as the store key and persist the relationship...
                 throw new RuntimeException("Unexpectedly large store key - will not be handled for now.");
@@ -135,8 +155,8 @@ public class DefaultImageService implements ImageService {
 
     private long pendingRenewal(BinaryStoreRetrievalResult result, String storeKey, URI uri, int delay, String waitForStatus,
                                 boolean generate) {
-        if (getRenewalValue(result) > renewalThreshold){
-            if(generate){
+        if (getRenewalValue(result) > renewalThreshold) {
+            if (generate) {
                 cacheManager.generateCacheRequest(storeKey, uri, delay, waitForStatus);
             }
             return defaultRefresh;
@@ -145,7 +165,7 @@ public class DefaultImageService implements ImageService {
     }
 
     private double getRenewalValue(BinaryStoreRetrievalResult result) {
-        return Math.log(dateHelper.current().getTime() - result.getTimeStored().getTime()) +  Math.log(result.retrievalCount());
+        return Math.log(dateHelper.current().getTime() - result.getTimeStored().getTime()) + Math.log(result.retrievalCount());
     }
 
     private URI generateCacheURI(String storeKey) {
