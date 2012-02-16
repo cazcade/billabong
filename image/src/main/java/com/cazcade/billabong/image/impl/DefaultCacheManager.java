@@ -51,6 +51,13 @@ public class DefaultCacheManager implements CacheManager {
     //This object must only be accessed in a block synchronized by the mutex object.
     private final Map<String, Future> futureMap = new HashMap<String, Future>();
 
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    private String type = "png";
+
     public DefaultCacheManager(ExecutorService executor, Capturer capturer, Capturer imageCapturer,
                                BinaryStore store, Map<ImageSize, ImageProcessor> uriSizes,
                                Map<ImageSize, ImageProcessor> imageUriSizes) {
@@ -106,7 +113,7 @@ public class DefaultCacheManager implements CacheManager {
                 for (ImageSize imageSize : uriSizes.keySet()) {
                     BufferedImage processedImage = uriSizes.get(imageSize).process(image);
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    ImageIO.write(processedImage, "jpeg", baos);
+                    ImageIO.write(processedImage, type, baos);
                     System.out.println("Placing Processed image in store: " + uri + imageSize);
                     store.placeInStore(storeKey + imageSize, new ByteArrayInputStream(baos.toByteArray()), true);
                 }
@@ -147,7 +154,7 @@ public class DefaultCacheManager implements CacheManager {
                 for (ImageSize imageSize : imageUriSizes.keySet()) {
                     BufferedImage processedImage = imageUriSizes.get(imageSize).process(image);
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    ImageIO.write(processedImage, "jpeg", baos);
+                    ImageIO.write(processedImage, type, baos);
                     System.out.println("Placing Processed image in store: " + uri + imageSize);
                     store.placeInStore(storeKey + imageSize, new ByteArrayInputStream(baos.toByteArray()), true);
                 }

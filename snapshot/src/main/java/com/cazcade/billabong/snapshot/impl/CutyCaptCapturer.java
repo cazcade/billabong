@@ -32,7 +32,7 @@ import java.util.UUID;
  */
 public class CutyCaptCapturer implements Capturer {
     private final String executable;
-    private String outputType = "jpg";
+    private String outputType = "png";
     private String outputPath = System.getProperty("cazcade.home", ".") + "/billabong/CutyCapt/tmp";
     private int minWidth = 1024;
     private int minHeight = 768;
