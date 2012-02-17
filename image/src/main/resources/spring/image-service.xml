@@ -124,10 +124,11 @@
 
     <bean id="cacheManager" class="com.cazcade.billabong.image.impl.DefaultCacheManager">
         <constructor-arg index="0" ref="executor"/>
-        <constructor-arg index="1" ref="capturer"/>
-        <constructor-arg index="2" ref="imageCapturer"/>
-        <constructor-arg index="3" ref="store"/>
-        <constructor-arg index="4">
+        <constructor-arg index="1" ref="wkhtmlCapturer"/>
+        <constructor-arg index="2" ref="cutyCaptCapturer"/>
+        <constructor-arg index="3" ref="imageCapturer"/>
+        <constructor-arg index="4" ref="store"/>
+        <constructor-arg index="5">
             <map>
                 <entry key="LARGE">
                     <bean class="com.cazcade.billabong.processing.impl.PipelineImageProcessor">
@@ -180,7 +181,7 @@
                 </entry>
             </map>
         </constructor-arg>
-        <constructor-arg index="5">
+        <constructor-arg index="6">
             <map>
                 <entry key="LARGE">
                     <bean class="com.cazcade.billabong.processing.impl.PipelineImageProcessor">
@@ -270,14 +271,14 @@
 
     </bean>
 
-    <!--<bean id="capturer" class="com.cazcade.billabong.snapshot.impl.CutyCaptCapturer">-->
-    <!--<constructor-arg index="0" value="CutyCapt"/>-->
-    <!--<constructor-arg index="1" ref="dateHelper"/>-->
-    <!--<property name="minWidth" value="1024"/>-->
-    <!--<property name="minHeight" value="768"/>-->
-    <!--</bean>-->
+    <bean id="cutyCaptCapturer" class="com.cazcade.billabong.snapshot.impl.CutyCaptCapturer">
+        <constructor-arg index="0" value="CutyCapt"/>
+        <constructor-arg index="1" ref="dateHelper"/>
+        <property name="minWidth" value="1024"/>
+        <property name="minHeight" value="768"/>
+    </bean>
 
-    <bean id="capturer" class="com.cazcade.billabong.snapshot.impl.WKHTMLCapturer">
+    <bean id="wkhtmlCapturer" class="com.cazcade.billabong.snapshot.impl.WKHTMLCapturer">
         <constructor-arg index="0" value="wkhtmltoimage"/>
         <constructor-arg index="1" ref="dateHelper"/>
     </bean>

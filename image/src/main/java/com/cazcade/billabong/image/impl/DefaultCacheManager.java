@@ -40,7 +40,6 @@ import java.util.concurrent.Future;
 public class DefaultCacheManager implements CacheManager {
 
     private final ExecutorService executor;
-    private final Capturer capturer;
     private final Capturer imageCapturer;
     private final Map<ImageSize, ImageProcessor> imageUriSizes;
     private final BinaryStore store;
@@ -50,6 +49,8 @@ public class DefaultCacheManager implements CacheManager {
 
     //This object must only be accessed in a block synchronized by the mutex object.
     private final Map<String, Future> futureMap = new HashMap<String, Future>();
+    private Capturer wkhtmlCapturer;
+    private Capturer cutyCapturer;
 
 
     public void setType(String type) {
@@ -58,11 +59,12 @@ public class DefaultCacheManager implements CacheManager {
 
     private String type = "png";
 
-    public DefaultCacheManager(ExecutorService executor, Capturer capturer, Capturer imageCapturer,
+    public DefaultCacheManager(ExecutorService executor, Capturer wkhtmlCapturer, Capturer cutyCapturer, Capturer imageCapturer,
                                BinaryStore store, Map<ImageSize, ImageProcessor> uriSizes,
                                Map<ImageSize, ImageProcessor> imageUriSizes) {
         this.executor = executor;
-        this.capturer = capturer;
+        this.wkhtmlCapturer = wkhtmlCapturer;
+        this.cutyCapturer = cutyCapturer;
         this.store = store;
         this.uriSizes = uriSizes;
         this.imageCapturer = imageCapturer;
@@ -105,6 +107,13 @@ public class DefaultCacheManager implements CacheManager {
         public void run() {
             try {
                 //Do work
+                Capturer capturer;
+                if (waitForStatus != null) {
+                    capturer = wkhtmlCapturer;
+                }
+                else {
+                    capturer = cutyCapturer;
+                }
                 Snapshot snapshot = capturer.getSnapshot(uri, delay, waitForStatus);
                 System.out.println("Got Snapshot: " + uri);
                 long time = System.currentTimeMillis();
