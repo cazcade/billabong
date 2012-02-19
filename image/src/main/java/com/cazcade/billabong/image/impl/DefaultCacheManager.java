@@ -105,31 +105,34 @@ public class DefaultCacheManager implements CacheManager {
 
         @Override
         public void run() {
+            Capturer capturer = null;
             try {
                 //Do work
-                Capturer capturer;
                 if (waitForStatus != null) {
                     capturer = wkhtmlCapturer;
                 }
                 else {
                     capturer = cutyCapturer;
                 }
-                Snapshot snapshot = capturer.getSnapshot(uri, delay, waitForStatus);
-                System.out.println("Got Snapshot: " + uri);
-                long time = System.currentTimeMillis();
-                BufferedImage image = ImageIO.read(snapshot.getImage());
-                System.out.println("Read Image: " + uri);
-                for (ImageSize imageSize : uriSizes.keySet()) {
-                    BufferedImage processedImage = uriSizes.get(imageSize).process(image);
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    ImageIO.write(processedImage, type, baos);
-                    System.out.println("Placing Processed image in store: " + uri + imageSize);
-                    store.placeInStore(storeKey + imageSize, new ByteArrayInputStream(baos.toByteArray()), true);
-                }
+                long time = capture(capturer);
                 System.out.println("Time: " + (System.currentTimeMillis() - time) + "ms.");
             } catch (IOException e) {
-                //todo sort out proper logging.
                 e.printStackTrace();
+                //fallback to the alternate
+                if (capturer == wkhtmlCapturer) {
+                    try {
+                        capture(cutyCapturer);
+                    } catch (IOException e1) {
+                        e.printStackTrace();
+                    }
+                }
+                if (capturer == wkhtmlCapturer) {
+                    try {
+                        capture(cutyCapturer);
+                    } catch (IOException e1) {
+                        e.printStackTrace();
+                    }
+                }
             } catch (RuntimeException e) {
                 //todo sort out proper logging.
                 e.printStackTrace();
@@ -138,6 +141,22 @@ public class DefaultCacheManager implements CacheManager {
             synchronized (mutex) {
                 futureMap.remove(storeKey);
             }
+        }
+
+        private long capture(Capturer capturer) throws IOException {
+            Snapshot snapshot = capturer.getSnapshot(uri, delay, waitForStatus);
+            System.out.println("Got Snapshot: " + uri);
+            long time = System.currentTimeMillis();
+            BufferedImage image = ImageIO.read(snapshot.getImage());
+            System.out.println("Read Image: " + uri);
+            for (ImageSize imageSize : uriSizes.keySet()) {
+                BufferedImage processedImage = uriSizes.get(imageSize).process(image);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ImageIO.write(processedImage, type, baos);
+                System.out.println("Placing Processed image in store: " + uri + imageSize);
+                store.placeInStore(storeKey + imageSize, new ByteArrayInputStream(baos.toByteArray()), true);
+            }
+            return time;
         }
     }
 
