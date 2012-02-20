@@ -36,7 +36,7 @@ public class CutyCaptCapturer implements Capturer {
     private String outputPath = System.getProperty("cazcade.home", ".") + "/billabong/CutyCapt/tmp";
     private int minWidth = 1024;
     private int minHeight = 768;
-    private int maxWait = 0;
+    private int maxWait = 10000;
     private long maxProcessWait = maxWait + 10000l;
 
     private final DateHelper dateHelper;

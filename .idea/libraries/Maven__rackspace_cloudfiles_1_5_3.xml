@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: rackspace:cloudfiles:1.5.3">
+    <CLASSES>
+      <root url="jar://$M2_REPO$/rackspace/cloudfiles/1.5.3/cloudfiles-1.5.3.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$M2_REPO$/rackspace/cloudfiles/1.5.3/cloudfiles-1.5.3-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$M2_REPO$/rackspace/cloudfiles/1.5.3/cloudfiles-1.5.3-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
