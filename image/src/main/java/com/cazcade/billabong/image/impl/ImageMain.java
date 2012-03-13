@@ -18,6 +18,7 @@ package com.cazcade.billabong.image.impl;
 
 import com.cazcade.billabong.image.CacheResponse;
 import com.cazcade.billabong.image.ImageService;
+import com.cazcade.billabong.image.ImageServiceRequest;
 import com.cazcade.billabong.image.ImageSize;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
@@ -55,7 +56,7 @@ public class ImageMain {
     }
 
     private static void sendImageRequest(ImageService service, String uriString) throws URISyntaxException {
-        CacheResponse response = service.getCacheURIForImage(new URI(uriString), ImageSize.CLIPPED_MEDIUM, true);
+        CacheResponse response = service.getCacheURIForImage(new ImageServiceRequest(new URI(uriString), ImageSize.CLIPPED_MEDIUM, true));
         System.out.println(response.getURI());
         System.out.println(response.getRefreshIndicator());
     }

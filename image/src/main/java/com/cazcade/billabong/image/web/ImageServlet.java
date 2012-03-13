@@ -18,6 +18,7 @@ package com.cazcade.billabong.image.web;
 
 import com.cazcade.billabong.image.CacheResponse;
 import com.cazcade.billabong.image.ImageService;
+import com.cazcade.billabong.image.ImageServiceRequest;
 import com.cazcade.billabong.image.ImageSize;
 
 import javax.servlet.ServletException;
@@ -43,7 +44,7 @@ public class ImageServlet {
         final String url = request.getParameter("url");
         final ImageSize imageSize = ImageSize.valueOf(request.getParameter("imageSize"));
         try {
-            CacheResponse cacheResponse = imageService.getCacheURIForImage(new URI(url), imageSize, true);
+            CacheResponse cacheResponse = imageService.getCacheURIForImage(new ImageServiceRequest(new URI(url), imageSize, true));
             //TODO return response in format acceptable to client.
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);

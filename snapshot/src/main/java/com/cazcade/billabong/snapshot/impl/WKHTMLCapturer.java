@@ -39,8 +39,8 @@ public class WKHTMLCapturer implements Capturer {
 
     private final DateHelper dateHelper;
     private final String userAgent = "Billabong 1.1 (WKHTMLImage) Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) " +
-                                     "AppleWebKit/534.52.7 (KHTML, " +
-                                     "like Gecko) Version/5.1.2 Safari/534.52.7";
+            "AppleWebKit/534.52.7 (KHTML, " +
+            "like Gecko) Version/5.1.2 Safari/534.52.7";
     private int maxWait = 60 * 1000;
 
     @SuppressWarnings({"SameParameterValue", "SameParameterValue"})
@@ -75,8 +75,7 @@ public class WKHTMLCapturer implements Capturer {
                     uri.toString(),
                     outputFile.toString()
             );
-        }
-        else {
+        } else {
             processBuilder = new ProcessBuilder(
                     executable,
                     "--width", String.valueOf(maxWidth),
@@ -90,6 +89,7 @@ public class WKHTMLCapturer implements Capturer {
                     outputFile.toString()
             );
         }
+        System.out.println(processBuilder.command());
         processBuilder.redirectErrorStream(true);
         try {
             Process captureProcess = processBuilder.start();
@@ -105,14 +105,13 @@ public class WKHTMLCapturer implements Capturer {
                     int length = inputStream.read(buffer);
                     if (length >= 0) {
                         output.append(buffer, 0, length);
-                    }
-                    else {
+                    } else {
                         try {
                             int result = captureProcess.exitValue();
                             done = true;
                             if (result != 0) {
                                 throw new RuntimeException("Failed to capture URI image successfully:\n" +
-                                                           uri + "\n" + output.toString()
+                                        uri + "\n" + output.toString()
                                 );
                             }
                         } catch (IllegalThreadStateException e) {

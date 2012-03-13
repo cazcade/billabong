@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.UUID;
 
 /**
@@ -36,7 +37,7 @@ public class CutyCaptCapturer implements Capturer {
     private String outputPath = System.getProperty("cazcade.home", ".") + "/billabong/CutyCapt/tmp";
     private int minWidth = 1024;
     private int minHeight = 768;
-    private int maxWait = 10000;
+    private int maxWait = 30000;
     private long maxProcessWait = maxWait + 10000l;
 
     private final DateHelper dateHelper;
@@ -59,20 +60,21 @@ public class CutyCaptCapturer implements Capturer {
                 "--out=" + outputFile.toString(),
                 "--min-width=" + minWidth,
                 "--min-height=" + minHeight,
-                "--max-wait=" + maxWait,
+                "--max-wait=" + maxWait + delayInSeconds * 1000,
                 "--delay=" + delayInSeconds * 1000,
                 "--user-agent='Billabong 1.1 (CutyCapt) Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_7; da-dk) AppleWebKit/533.211 " +
-                "(KHTML, like Gecko) Version/5.0.5 Safari/533.21.1'"
+                        "(KHTML, like Gecko) Version/5.0.5 Safari/533.21.1'"
         );
 
+        System.out.println(processBuilder.command());
         processBuilder.redirectErrorStream(true);
         try {
             Process captureProcess = processBuilder.start();
             InputStreamReader inputStream = new InputStreamReader(
                     new BufferedInputStream(captureProcess.getInputStream())
             );
+            boolean done = false;
             try {
-                boolean done = false;
                 long maxEndTime = System.currentTimeMillis() + maxProcessWait;
                 StringBuffer output = new StringBuffer();
                 char[] buffer = new char[4096];
@@ -80,14 +82,15 @@ public class CutyCaptCapturer implements Capturer {
                     int length = inputStream.read(buffer);
                     if (length >= 0) {
                         output.append(buffer, 0, length);
-                    }
-                    else {
+                    } else {
                         try {
                             int result = captureProcess.exitValue();
                             done = true;
                             if (result != 0) {
+                                System.out.println("Process exited with value " + result);
+
                                 throw new RuntimeException("Failed to capture URI image successfully:\n" +
-                                                           uri + "\n" + output.toString()
+                                        uri + "\n" + output.toString()
                                 );
                             }
                         } catch (IllegalThreadStateException e) {
@@ -100,9 +103,21 @@ public class CutyCaptCapturer implements Capturer {
                 System.err.println(output);
             } finally {
                 inputStream.close();
+                if (!done) {
+                    System.out.println("Timed out destroying process.");
+                    captureProcess.destroy();
+                }
             }
         } catch (IOException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
+        }
+        if (!outputFile.exists()) {
+            try {
+                return new ImageUriSnapshot(new URI("http://placeholder.it/1024x768?text=Snapshot+Failed"));
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
         }
         return new FileSnapshot(uri, outputFile, dateHelper.current());
     }

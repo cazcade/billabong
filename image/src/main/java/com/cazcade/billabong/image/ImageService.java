@@ -35,28 +35,22 @@ public interface ImageService {
      * @param imageSize The size of the image to retrieve.
      * @return The response to the cache request.
      */
+    @Deprecated
     public CacheResponse getCacheURI(URI uri, ImageSize imageSize);
 
     /**
      * This method returns a URI that indicates how to retrieve the cached image
      *
-     * @param uri           The URI to retrieve from the cache.
-     * @param imageSize     The size of the image to retrieve.
-     * @param delay         the delay in seconds before generating snapshots of web pages.
-     * @param waitForStatus wait until window.status has this value (if not null)
-     * @param generate      whether to generate the entry in the cache.  @return The response to the cache request.
+     * @param imageServiceRequest
      */
-    public CacheResponse getCacheURI(URI uri, ImageSize imageSize, int delay, String waitForStatus, boolean generate);
+    public CacheResponse getCacheURI(ImageServiceRequest imageServiceRequest);
 
     /**
      * This method returns a URI that indicates how to retrieve the cached image.
      *
-     * @param imageUri  The image URI to retrieve from the cache.
-     * @param imageSize The size of the image to retrieve.
-     * @param generate  whether to generate the entry in the cache.
-     * @return the response to the cache request.
+     * @param imageServiceRequest@return the response to the cache request.
      */
-    public CacheResponse getCacheURIForImage(URI imageUri, ImageSize imageSize, boolean generate);
+    public CacheResponse getCacheURIForImage(ImageServiceRequest imageServiceRequest);
 
     /**
      * Method for retrieving data from a local source. This method is intended to allow access to in-memory, file based

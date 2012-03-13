@@ -18,10 +18,7 @@ package com.cazcade.billabong.image.impl;
 
 import com.cazcade.billabong.common.DateHelper;
 import com.cazcade.billabong.common.impl.DefaultDateHelper;
-import com.cazcade.billabong.image.CacheManager;
-import com.cazcade.billabong.image.CacheResponse;
-import com.cazcade.billabong.image.ImageService;
-import com.cazcade.billabong.image.ImageSize;
+import com.cazcade.billabong.image.*;
 import com.cazcade.billabong.processing.Tuple2dInteger;
 import com.cazcade.billabong.store.BinaryStore;
 import com.cazcade.billabong.store.BinaryStoreRetrievalResult;
@@ -30,7 +27,6 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -62,58 +58,56 @@ public class DefaultImageService implements ImageService {
 
     @Override
     public CacheResponse getCacheURI(URI uri, ImageSize imageSize) {
-        return getCacheURI(uri, imageSize, 0, null, true);
+        return getCacheURI(new ImageServiceRequest(uri, imageSize, 0, 1, null, true));
     }
 
     @Override
-    public CacheResponse getCacheURI(URI uri, ImageSize imageSize, int delay, String waitForStatus, boolean generate) {
+    public CacheResponse getCacheURI(ImageServiceRequest imageServiceRequest) {
         //Generate the cache store key
-        String storeKey = generateStoreKey(uri);
+        String storeKey = generateStoreKey(imageServiceRequest);
         long refreshIndicator = defaultRefresh;
         URI cacheURI = holdingURI;
-        BinaryStoreRetrievalResult result = store.retrieveFromStore(storeKey + imageSize);
+        BinaryStoreRetrievalResult result = store.retrieveFromStore(storeKey + imageServiceRequest.getImageSize());
         try {
             if (result.entryFound()) {
-                refreshIndicator = pendingRenewal(result, storeKey, uri, delay, waitForStatus, generate);
-                cacheURI = generateCacheURI(storeKey + imageSize);
-            }
-            else {
-                if (generate) {
-                    cacheManager.generateCacheRequest(storeKey, uri, delay, waitForStatus);
+                refreshIndicator = pendingRenewal(result, storeKey, imageServiceRequest.getUri(), imageServiceRequest.getDelay(), imageServiceRequest.getWaitForStatus(), imageServiceRequest.isGenerate());
+                cacheURI = generateCacheURI(storeKey + imageServiceRequest.getImageSize());
+            } else {
+                if (imageServiceRequest.isGenerate()) {
+                    cacheManager.generateCacheRequest(storeKey, imageServiceRequest.getUri(), imageServiceRequest.getDelay(), imageServiceRequest.getWaitForStatus());
                 }
             }
         } catch (RejectedExecutionException e) {
             throw new RuntimeException(e);
         }
 
-        Tuple2dInteger imageSizeTuple = uriSizeMap.get(imageSize.name());
+        Tuple2dInteger imageSizeTuple = uriSizeMap.get(imageServiceRequest.getImageSize().name());
         return new CacheResponse(cacheURI, refreshIndicator, imageSizeTuple);
     }
 
     @Override
-    public CacheResponse getCacheURIForImage(URI imageUri, ImageSize imageSize, boolean generate) {
+    public CacheResponse getCacheURIForImage(ImageServiceRequest imageServiceRequest) {
         //Generate the cache store key
-        String storeKey = generateStoreKey(imageUri);
+        String storeKey = generateStoreKey(imageServiceRequest);
         long refreshIndicator = defaultRefresh;
         URI cacheURI = holdingURI;
-        BinaryStoreRetrievalResult result = store.retrieveFromStore(storeKey + imageSize);
+        BinaryStoreRetrievalResult result = store.retrieveFromStore(storeKey + imageServiceRequest.getImageSize());
         try {
             if (result.entryFound()) {
-                refreshIndicator = pendingRenewal(result, storeKey, imageUri, 0 /*Images should be generated immediately*/,
-                                                  null, generate
-                                                 );
-                cacheURI = generateCacheURI(storeKey + imageSize);
-            }
-            else {
-                if (generate) {
-                    cacheManager.generateImageCacheRequest(storeKey, imageUri);
+                refreshIndicator = pendingRenewal(result, storeKey, imageServiceRequest.getImageUri(), 0 /*Images should be generated immediately*/,
+                        null, imageServiceRequest.isGenerate()
+                );
+                cacheURI = generateCacheURI(storeKey + imageServiceRequest.getImageSize());
+            } else {
+                if (imageServiceRequest.isGenerate()) {
+                    cacheManager.generateImageCacheRequest(storeKey, imageServiceRequest.getImageUri());
                 }
             }
         } catch (RejectedExecutionException e) {
             throw new RuntimeException(e);
         }
 
-        Tuple2dInteger imageSizeTuple = imageUriSizeMap.get(imageSize.name());
+        Tuple2dInteger imageSizeTuple = imageUriSizeMap.get(imageServiceRequest.getImageSize().name());
         return new CacheResponse(cacheURI, refreshIndicator, imageSizeTuple);
     }
 
@@ -138,12 +132,13 @@ public class DefaultImageService implements ImageService {
         this.renewalThreshold = renewalThreshold;
     }
 
-    private String generateStoreKey(URI uri) {
+    private String generateStoreKey(ImageServiceRequest req) {
         try {
-            String storeKey = URLEncoder.encode(uri.toString(), encoding).replace('%', 'P');
+            String storeKey = req.getHash();
             if (storeKey.getBytes(encoding).length > 1024) {
                 // TODO this check is in place to ensure that we do not exceed the limits imposed by CloudFiles. Replace
                 // with proper handling - probably generate an UUID as the store key and persist the relationship...
+                //TODO: Use SHA1 or MD5 hash
                 throw new RuntimeException("Unexpectedly large store key - will not be handled for now.");
             }
             return storeKey;
