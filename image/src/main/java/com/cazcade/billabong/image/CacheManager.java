@@ -23,7 +23,7 @@ import java.net.URI;
  */
 public interface CacheManager {
 
-    public void generateCacheRequest(String storeKey, URI uri, int delay, String waitForStatus);
+    public void generateCacheRequest(String storeKey, URI uri, int delay, String waitForStatus, String requestKey, ImageSize imageSize);
 
-    public void generateImageCacheRequest(String storeKey, URI uri);
+    public void generateImageCacheRequest(String storeKey, URI uri, String requestKey);
 }

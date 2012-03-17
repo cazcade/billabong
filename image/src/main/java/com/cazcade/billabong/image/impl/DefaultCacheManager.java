@@ -72,19 +72,19 @@ public class DefaultCacheManager implements CacheManager {
     }
 
     @Override
-    public void generateCacheRequest(String storeKey, URI uri, int delay, String waitForStatus) {
+    public void generateCacheRequest(String storeKey, URI uri, int delay, String waitForStatus, String requestKey, ImageSize imageSize) {
         synchronized (mutex) {
-            if (!futureMap.containsKey(storeKey)) {
-                futureMap.put(storeKey, executor.submit(new CacheRequest(storeKey, uri, delay, waitForStatus)));
+            if (!futureMap.containsKey(requestKey)) {
+                futureMap.put(requestKey, executor.submit(new CacheRequest(storeKey, uri, delay, waitForStatus, requestKey, imageSize)));
             }
         }
     }
 
     @Override
-    public void generateImageCacheRequest(String storeKey, URI uri) {
+    public void generateImageCacheRequest(String storeKey, URI uri, String requestKey) {
         synchronized (mutex) {
-            if (!futureMap.containsKey(storeKey)) {
-                futureMap.put(storeKey, executor.submit(new ImageCacheRequest(storeKey, uri)));
+            if (!futureMap.containsKey(requestKey)) {
+                futureMap.put(requestKey, executor.submit(new ImageCacheRequest(storeKey, uri, requestKey)));
             }
         }
     }
@@ -94,13 +94,18 @@ public class DefaultCacheManager implements CacheManager {
         private final URI uri;
         private int delay;
         private String waitForStatus;
+        private String requestKey;
+        private ImageSize imageSize;
 
-        private CacheRequest(String storeKey, URI uri, int delay, String waitForStatus) {
+
+        private CacheRequest(String storeKey, URI uri, int delay, String waitForStatus, String requestKey, ImageSize imageSize) {
             this.storeKey = storeKey;
             this.uri = uri;
 
             this.delay = delay;
             this.waitForStatus = waitForStatus;
+            this.requestKey = requestKey;
+            this.imageSize = imageSize;
         }
 
         @Override
@@ -110,36 +115,32 @@ public class DefaultCacheManager implements CacheManager {
                 //Do work
                 if (waitForStatus != null) {
                     capturer = wkhtmlCapturer;
-                }
-                else {
+                } else {
                     capturer = cutyCapturer;
                 }
                 long time = capture(capturer);
                 System.out.println("Time: " + (System.currentTimeMillis() - time) + "ms.");
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 //fallback to the alternate
                 if (capturer == wkhtmlCapturer) {
                     try {
                         capture(cutyCapturer);
-                    } catch (IOException e1) {
+                    } catch (Exception e1) {
                         e.printStackTrace();
                     }
                 }
-                if (capturer == wkhtmlCapturer) {
+                if (capturer == cutyCapturer) {
                     try {
-                        capture(cutyCapturer);
-                    } catch (IOException e1) {
+                        capture(wkhtmlCapturer);
+                    } catch (Exception e1) {
                         e.printStackTrace();
                     }
                 }
-            } catch (RuntimeException e) {
-                //todo sort out proper logging.
-                e.printStackTrace();
             }
             //Register that the work is complete.
             synchronized (mutex) {
-                futureMap.remove(storeKey);
+                futureMap.remove(requestKey);
             }
         }
 
@@ -149,13 +150,11 @@ public class DefaultCacheManager implements CacheManager {
             long time = System.currentTimeMillis();
             BufferedImage image = ImageIO.read(snapshot.getImage());
             System.out.println("Read Image: " + uri);
-            for (ImageSize imageSize : uriSizes.keySet()) {
-                BufferedImage processedImage = uriSizes.get(imageSize).process(image);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                ImageIO.write(processedImage, type, baos);
-                System.out.println("Placing Processed image in store: " + uri + imageSize);
-                store.placeInStore(storeKey + imageSize, new ByteArrayInputStream(baos.toByteArray()), true);
-            }
+            BufferedImage processedImage = uriSizes.get(imageSize).process(image);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(processedImage, type, baos);
+            System.out.println("Placing Processed image in store: " + uri + imageSize);
+            store.placeInStore(storeKey, new ByteArrayInputStream(baos.toByteArray()), true);
             return time;
         }
     }
@@ -163,11 +162,14 @@ public class DefaultCacheManager implements CacheManager {
     private class ImageCacheRequest implements Runnable {
         private final String storeKey;
         private final URI uri;
+        private String requestKey;
+        private ImageSize imageSize;
 
-        private ImageCacheRequest(String storeKey, URI uri) {
+        private ImageCacheRequest(String storeKey, URI uri, String requestKey) {
             this.storeKey = storeKey;
             this.uri = uri;
 
+            this.requestKey = requestKey;
         }
 
         @Override
@@ -179,13 +181,11 @@ public class DefaultCacheManager implements CacheManager {
                 long time = System.currentTimeMillis();
                 BufferedImage image = ImageIO.read(snapshot.getImage());
                 System.out.println("Read Image: " + uri);
-                for (ImageSize imageSize : imageUriSizes.keySet()) {
-                    BufferedImage processedImage = imageUriSizes.get(imageSize).process(image);
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    ImageIO.write(processedImage, type, baos);
-                    System.out.println("Placing Processed image in store: " + uri + imageSize);
-                    store.placeInStore(storeKey + imageSize, new ByteArrayInputStream(baos.toByteArray()), true);
-                }
+                BufferedImage processedImage = imageUriSizes.get(imageSize).process(image);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ImageIO.write(processedImage, type, baos);
+                System.out.println("Placing Processed image in store: " + uri + imageSize);
+                store.placeInStore(storeKey, new ByteArrayInputStream(baos.toByteArray()), true);
                 System.out.println("Time: " + (System.currentTimeMillis() - time) + "ms.");
             } catch (IOException e) {
                 //todo sort out proper logging.
@@ -198,7 +198,7 @@ public class DefaultCacheManager implements CacheManager {
             }
             //Register that the work is complete.
             synchronized (mutex) {
-                futureMap.remove(storeKey);
+                futureMap.remove(requestKey);
             }
         }
     }

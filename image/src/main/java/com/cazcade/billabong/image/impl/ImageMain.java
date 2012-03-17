@@ -50,13 +50,13 @@ public class ImageMain {
     }
 
     private static void sendRequest(ImageService service, String uriString) throws URISyntaxException {
-        CacheResponse response = service.getCacheURI(new URI(uriString), ImageSize.CLIPPED_MEDIUM);
+        CacheResponse response = service.getCacheURI(new URI(uriString), ImageSize.CLIPPED_MEDIUM, uriString);
         System.out.println(response.getURI());
         System.out.println(response.getRefreshIndicator());
     }
 
     private static void sendImageRequest(ImageService service, String uriString) throws URISyntaxException {
-        CacheResponse response = service.getCacheURIForImage(new ImageServiceRequest(new URI(uriString), ImageSize.CLIPPED_MEDIUM, true));
+        CacheResponse response = service.getCacheURIForImage(new ImageServiceRequest(new URI(uriString), ImageSize.CLIPPED_MEDIUM, true, uriString));
         System.out.println(response.getURI());
         System.out.println(response.getRefreshIndicator());
     }

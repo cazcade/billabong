@@ -16,7 +16,6 @@
 
 package com.cazcade.billabong.image;
 
-import java.io.InputStream;
 import java.net.URI;
 
 /**
@@ -31,12 +30,13 @@ public interface ImageService {
      * This method returns a URI that indicates how to retrieve the cached image. Will always generate an entry if
      * required through entry or staleness.
      *
-     * @param uri       The URI to retrieve from the cache.
-     * @param imageSize The size of the image to retrieve.
+     * @param uri        The URI to retrieve from the cache.
+     * @param imageSize  The size of the image to retrieve.
+     * @param requestKey
      * @return The response to the cache request.
      */
     @Deprecated
-    public CacheResponse getCacheURI(URI uri, ImageSize imageSize);
+    public CacheResponse getCacheURI(URI uri, ImageSize imageSize, String requestKey);
 
     /**
      * This method returns a URI that indicates how to retrieve the cached image
@@ -51,15 +51,5 @@ public interface ImageService {
      * @param imageServiceRequest@return the response to the cache request.
      */
     public CacheResponse getCacheURIForImage(ImageServiceRequest imageServiceRequest);
-
-    /**
-     * Method for retrieving data from a local source. This method is intended to allow access to in-memory, file based
-     * and secured remote binary stores.
-     *
-     * @param key       The key to retrieve.
-     * @param imageSize The size of the image to retrieve.
-     * @return A stream representation of the data.
-     */
-    public InputStream getDataLocally(String key, ImageSize imageSize);
 
 }

@@ -11,6 +11,7 @@ public class ImageServiceRequest {
     private int freshness;
     private String waitForStatus;
     private boolean generate;
+    private String requestKey;
 
     /**
      * @param uri           The URI to retrieve from the cache.
@@ -18,21 +19,24 @@ public class ImageServiceRequest {
      * @param delay         the delay in seconds before generating snapshots of web pages.
      * @param waitForStatus wait until window.status has this value (if not null)
      * @param generate      whether to generate the entry in the cache.  @return The response to the cache request.
+     * @param requestKey
      */
-    public ImageServiceRequest(URI uri, ImageSize imageSize, int delay, int freshness, String waitForStatus, boolean generate) {
+    public ImageServiceRequest(URI uri, ImageSize imageSize, int delay, int freshness, String waitForStatus, boolean generate, String requestKey) {
         this.uri = uri;
         this.imageSize = imageSize;
         this.delay = delay;
         this.freshness = freshness;
         this.waitForStatus = waitForStatus;
         this.generate = generate;
+        this.requestKey = requestKey;
     }
 
-    public ImageServiceRequest(URI uri, ImageSize imageSize, boolean generate) {
+    public ImageServiceRequest(URI uri, ImageSize imageSize, boolean generate, String requestKey) {
 
         this.uri = uri;
         this.imageSize = imageSize;
         this.generate = generate;
+        this.requestKey = requestKey;
     }
 
     public URI getUri() {
@@ -61,13 +65,18 @@ public class ImageServiceRequest {
 
     public String getStoreURI() {
         if (freshness > 0) {
-            return "store:" + ((int) ((double) System.currentTimeMillis() / (double) freshness * 1000)) + ":" + uri;
+            return "store:" + ((int) ((double) System.currentTimeMillis() / ((double) freshness * 1000))) + ":" + imageSize.name().toLowerCase() + ":" + uri;
         } else {
-            return "store::" + uri;
+            return "store::" + imageSize.name().toLowerCase() + ":" + uri;
         }
     }
 
     public String getHash() {
         return DigestUtils.shaHex(getStoreURI());
+    }
+
+
+    public String getRequestKey() {
+        return requestKey;
     }
 }

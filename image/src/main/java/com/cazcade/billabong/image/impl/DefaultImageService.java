@@ -23,7 +23,6 @@ import com.cazcade.billabong.processing.Tuple2dInteger;
 import com.cazcade.billabong.store.BinaryStore;
 import com.cazcade.billabong.store.BinaryStoreRetrievalResult;
 
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -57,24 +56,26 @@ public class DefaultImageService implements ImageService {
     }
 
     @Override
-    public CacheResponse getCacheURI(URI uri, ImageSize imageSize) {
-        return getCacheURI(new ImageServiceRequest(uri, imageSize, 0, 1, null, true));
+    public CacheResponse getCacheURI(URI uri, ImageSize imageSize, String requestKey) {
+        return getCacheURI(new ImageServiceRequest(uri, imageSize, 0, 1, null, true, requestKey));
     }
 
     @Override
     public CacheResponse getCacheURI(ImageServiceRequest imageServiceRequest) {
         //Generate the cache store key
         String storeKey = generateStoreKey(imageServiceRequest);
+        String requestKey = imageServiceRequest.getRequestKey();
+
         long refreshIndicator = defaultRefresh;
         URI cacheURI = holdingURI;
-        BinaryStoreRetrievalResult result = store.retrieveFromStore(storeKey + imageServiceRequest.getImageSize());
+        BinaryStoreRetrievalResult result = store.retrieveFromStore(storeKey);
         try {
             if (result.entryFound()) {
-                refreshIndicator = pendingRenewal(result, storeKey, imageServiceRequest.getUri(), imageServiceRequest.getDelay(), imageServiceRequest.getWaitForStatus(), imageServiceRequest.isGenerate());
-                cacheURI = generateCacheURI(storeKey + imageServiceRequest.getImageSize());
+                refreshIndicator = pendingRenewal(requestKey, result, storeKey, imageServiceRequest.getUri(), imageServiceRequest.getDelay(), imageServiceRequest.getWaitForStatus(), imageServiceRequest.isGenerate(), imageServiceRequest.getImageSize());
+                cacheURI = generateCacheURI(storeKey);
             } else {
                 if (imageServiceRequest.isGenerate()) {
-                    cacheManager.generateCacheRequest(storeKey, imageServiceRequest.getUri(), imageServiceRequest.getDelay(), imageServiceRequest.getWaitForStatus());
+                    cacheManager.generateCacheRequest(storeKey, imageServiceRequest.getUri(), imageServiceRequest.getDelay(), imageServiceRequest.getWaitForStatus(), requestKey, imageServiceRequest.getImageSize());
                 }
             }
         } catch (RejectedExecutionException e) {
@@ -91,16 +92,17 @@ public class DefaultImageService implements ImageService {
         String storeKey = generateStoreKey(imageServiceRequest);
         long refreshIndicator = defaultRefresh;
         URI cacheURI = holdingURI;
-        BinaryStoreRetrievalResult result = store.retrieveFromStore(storeKey + imageServiceRequest.getImageSize());
+        String requestKey = imageServiceRequest.getRequestKey();
+        BinaryStoreRetrievalResult result = store.retrieveFromStore(storeKey);
         try {
             if (result.entryFound()) {
-                refreshIndicator = pendingRenewal(result, storeKey, imageServiceRequest.getImageUri(), 0 /*Images should be generated immediately*/,
-                        null, imageServiceRequest.isGenerate()
-                );
-                cacheURI = generateCacheURI(storeKey + imageServiceRequest.getImageSize());
+                refreshIndicator = pendingRenewal(requestKey, result, storeKey, imageServiceRequest.getImageUri(), 0 /*Images should be generated immediately*/,
+                        null, imageServiceRequest.isGenerate(),
+                        imageServiceRequest.getImageSize());
+                cacheURI = generateCacheURI(storeKey);
             } else {
                 if (imageServiceRequest.isGenerate()) {
-                    cacheManager.generateImageCacheRequest(storeKey, imageServiceRequest.getImageUri());
+                    cacheManager.generateImageCacheRequest(storeKey, imageServiceRequest.getImageUri(), requestKey);
                 }
             }
         } catch (RejectedExecutionException e) {
@@ -109,11 +111,6 @@ public class DefaultImageService implements ImageService {
 
         Tuple2dInteger imageSizeTuple = imageUriSizeMap.get(imageServiceRequest.getImageSize().name());
         return new CacheResponse(cacheURI, refreshIndicator, imageSizeTuple);
-    }
-
-    @Override
-    public InputStream getDataLocally(String key, ImageSize imageSize) {
-        return store.retrieveFromStore(key + imageSize).getContent();
     }
 
     public void setEncoding(String encoding) {
@@ -136,9 +133,6 @@ public class DefaultImageService implements ImageService {
         try {
             String storeKey = req.getHash();
             if (storeKey.getBytes(encoding).length > 1024) {
-                // TODO this check is in place to ensure that we do not exceed the limits imposed by CloudFiles. Replace
-                // with proper handling - probably generate an UUID as the store key and persist the relationship...
-                //TODO: Use SHA1 or MD5 hash
                 throw new RuntimeException("Unexpectedly large store key - will not be handled for now.");
             }
             return storeKey;
@@ -148,11 +142,11 @@ public class DefaultImageService implements ImageService {
 
     }
 
-    private long pendingRenewal(BinaryStoreRetrievalResult result, String storeKey, URI uri, int delay, String waitForStatus,
-                                boolean generate) {
+    private long pendingRenewal(String requestKey, BinaryStoreRetrievalResult result, String storeKey, URI uri, int delay, String waitForStatus,
+                                boolean generate, ImageSize imageSize) {
         if (getRenewalValue(result) > renewalThreshold) {
             if (generate) {
-                cacheManager.generateCacheRequest(storeKey, uri, delay, waitForStatus);
+                cacheManager.generateCacheRequest(storeKey, uri, delay, waitForStatus, requestKey, imageSize);
             }
             return defaultRefresh;
         }

@@ -25,7 +25,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cazcade.billabong</groupId>
-    <artifactId>common</artifactId>
+    <artifactId>billabong-common</artifactId>
     <version>1.1-SNAPSHOT</version>
 
     <build>

@@ -31,6 +31,7 @@ import java.util.UUID;
  * Wrapper class for the CutyCapt executable.
  */
 public class WKHTMLCapturer implements Capturer {
+    public static final int GRACE_PERIOD = 5000;
     private final String executable;
     private String outputType = "png";
     private String outputPath = System.getProperty("cazcade.home", ".") + "/billabong/wkhtml/tmp";
@@ -41,7 +42,6 @@ public class WKHTMLCapturer implements Capturer {
     private final String userAgent = "Billabong 1.1 (WKHTMLImage) Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) " +
             "AppleWebKit/534.52.7 (KHTML, " +
             "like Gecko) Version/5.1.2 Safari/534.52.7";
-    private int maxWait = 60 * 1000;
 
     @SuppressWarnings({"SameParameterValue", "SameParameterValue"})
     public WKHTMLCapturer(String executable, DateHelper dateHelper) {
@@ -51,7 +51,7 @@ public class WKHTMLCapturer implements Capturer {
 
     @Override
     public Snapshot getSnapshot(URI uri, final int delayInSeconds, String waitForWindowStatus) {
-        long maxProcessWait = (delayInSeconds * 1000) + maxWait;
+        long maxProcessWait = (delayInSeconds * 1000) + GRACE_PERIOD;
 
         initOutputPath();
         UUID uuid = UUID.randomUUID();
@@ -72,6 +72,8 @@ public class WKHTMLCapturer implements Capturer {
                     "--no-stop-slow-scripts",
                     "--window-status", waitForWindowStatus,
 //                    "--javascript-delay", delayString,
+                    "--enable-plugins",
+                    "--load-error-handling", "ignore",
                     uri.toString(),
                     outputFile.toString()
             );
@@ -85,6 +87,8 @@ public class WKHTMLCapturer implements Capturer {
                     "--use-xserver",
                     "--custom-header", "User-Agent", userAgent,
                     "--javascript-delay", delayString,
+                    "--enable-plugins",
+                    "--load-error-handling", "ignore",
                     uri.toString(),
                     outputFile.toString()
             );
@@ -159,10 +163,6 @@ public class WKHTMLCapturer implements Capturer {
 
     public void setMaxHeight(int maxHeight) {
         this.maxHeight = maxHeight;
-    }
-
-    public void setMaxWait(int maxWait) {
-        this.maxWait = maxWait;
     }
 
 
