@@ -65,9 +65,9 @@ public class ImageServiceRequest {
 
     public String getStoreURI() {
         if (freshness > 0) {
-            return "store:" + ((int) ((double) System.currentTimeMillis() / ((double) freshness * 1000))) + ":" + imageSize.name().toLowerCase() + ":" + uri;
+            return "store:" + delay + ":" + ((int) ((double) System.currentTimeMillis() / ((double) freshness * 1000))) + ":" + imageSize.name().toLowerCase() + ":" + uri;
         } else {
-            return "store::" + imageSize.name().toLowerCase() + ":" + uri;
+            return "store::" + delay + ":" + imageSize.name().toLowerCase() + ":" + uri;
         }
     }
 
