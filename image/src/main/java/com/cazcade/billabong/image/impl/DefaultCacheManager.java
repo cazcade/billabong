@@ -144,7 +144,7 @@ public class DefaultCacheManager implements CacheManager {
             }
         }
 
-        private long capture(Capturer capturer) throws IOException {
+        private long capture(Capturer capturer) throws IOException, InterruptedException {
             Snapshot snapshot = capturer.getSnapshot(uri, delay, waitForStatus);
             System.out.println("Got Snapshot: " + uri);
             long time = System.currentTimeMillis();
@@ -187,6 +187,10 @@ public class DefaultCacheManager implements CacheManager {
                 System.out.println("Placing Processed image in store: " + uri + imageSize);
                 store.placeInStore(storeKey, new ByteArrayInputStream(baos.toByteArray()), true);
                 System.out.println("Time: " + (System.currentTimeMillis() - time) + "ms.");
+                //Register that the work is complete.
+                synchronized (mutex) {
+                    futureMap.remove(requestKey);
+                }
             } catch (IOException e) {
                 //todo sort out proper logging.
                 System.err.println("Problem processing URI : " + uri);
@@ -195,10 +199,10 @@ public class DefaultCacheManager implements CacheManager {
                 //todo sort out proper logging.
                 System.err.println("Problem processing URI : " + uri);
                 e.printStackTrace();
-            }
-            //Register that the work is complete.
-            synchronized (mutex) {
-                futureMap.remove(requestKey);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Thread.interrupted();
+                return;
             }
         }
     }

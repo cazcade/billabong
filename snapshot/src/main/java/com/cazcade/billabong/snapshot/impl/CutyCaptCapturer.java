@@ -48,7 +48,7 @@ public class CutyCaptCapturer implements Capturer {
     }
 
     @Override
-    public Snapshot getSnapshot(URI uri, final int delayInSeconds, String waitForWindowStatus) {
+    public Snapshot getSnapshot(URI uri, final int delayInSeconds, String waitForWindowStatus) throws InterruptedException {
         initOutputPath();
         UUID uuid = UUID.randomUUID();
         File outputFile = new File(outputPath, uuid.toString() + "." + outputType);
@@ -79,26 +79,29 @@ public class CutyCaptCapturer implements Capturer {
                 StringBuffer output = new StringBuffer();
                 char[] buffer = new char[4096];
                 while (!done && System.currentTimeMillis() < maxEndTime) {
-                    int length = inputStream.read(buffer);
-                    if (length >= 0) {
-                        output.append(buffer, 0, length);
-                    } else {
-                        try {
-                            int result = captureProcess.exitValue();
-                            done = true;
-                            if (result != 0) {
-                                System.out.println("Process exited with value " + result);
+                    try {
+                        int result = captureProcess.exitValue();
+                        done = true;
+                        if (result != 0) {
+                            System.out.println("Process exited with value " + result);
 
-                                if (!outputFile.exists()) {
-                                    throw new RuntimeException("Failed to capture URI image successfully:\n" +
-                                            uri + "\n" + output.toString()
-                                    );
-                                }
+                            if (!outputFile.exists()) {
+                                throw new RuntimeException("Failed to capture URI image successfully:\n" +
+                                        uri + "\n" + output.toString()
+                                );
                             }
-                        } catch (IllegalThreadStateException e) {
-                            //expected - work not yet done...
-                            //The only case I've yet found where an empty catch block may be justified.
                         }
+                    } catch (IllegalThreadStateException e) {
+                        //expected - work not yet done...
+                        //The only case I've yet found where an empty catch block may be justified.
+                    }
+                    if (inputStream.ready()) {
+                        int length = inputStream.read(buffer);
+                        if (length >= 0) {
+                            output.append(buffer, 0, length);
+                        }
+                    } else {
+                        Thread.sleep(100);
                     }
 
                 }

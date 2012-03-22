@@ -32,5 +32,5 @@ public interface Capturer {
      *                             this value.
      * @return the snapshot that has been captured.
      */
-    public Snapshot getSnapshot(URI uri, int delay, String waitForWindowStatus);
+    public Snapshot getSnapshot(URI uri, int delay, String waitForWindowStatus) throws InterruptedException;
 }
