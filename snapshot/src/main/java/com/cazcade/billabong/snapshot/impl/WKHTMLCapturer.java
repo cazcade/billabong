@@ -20,10 +20,7 @@ import com.cazcade.billabong.common.DateHelper;
 import com.cazcade.billabong.snapshot.Capturer;
 import com.cazcade.billabong.snapshot.Snapshot;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.UUID;
 
@@ -31,12 +28,14 @@ import java.util.UUID;
  * Wrapper class for the CutyCapt executable.
  */
 public class WKHTMLCapturer implements Capturer {
-    public static final int GRACE_PERIOD = 5000;
+    public static final int TIMEOUT_GRACE_PERIOD = 5000;
     private final String executable;
     private String outputType = "png";
     private String outputPath = System.getProperty("cazcade.home", ".") + "/billabong/wkhtml/tmp";
     private int maxWidth = 1024;
     private int maxHeight = 0;
+    private int maxWait = 10000;
+
 
     private final DateHelper dateHelper;
     private final String userAgent = "Billabong 1.1 (WKHTMLImage) Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) " +
@@ -50,8 +49,7 @@ public class WKHTMLCapturer implements Capturer {
     }
 
     @Override
-    public Snapshot getSnapshot(URI uri, final int delayInSeconds, String waitForWindowStatus) {
-        long maxProcessWait = (delayInSeconds * 1000) + GRACE_PERIOD;
+    public Snapshot getSnapshot(URI uri, final int delayInSeconds, String waitForWindowStatus) throws InterruptedException {
 
         initOutputPath();
         UUID uuid = UUID.randomUUID();
@@ -93,49 +91,20 @@ public class WKHTMLCapturer implements Capturer {
                     outputFile.toString()
             );
         }
-        System.out.println(processBuilder.command());
-        processBuilder.redirectErrorStream(true);
-        try {
-            Process captureProcess = processBuilder.start();
-            InputStreamReader inputStream = new InputStreamReader(
-                    new BufferedInputStream(captureProcess.getInputStream())
-            );
-            try {
-                boolean done = false;
-                long maxEndTime = System.currentTimeMillis() + maxProcessWait;
-                StringBuffer output = new StringBuffer();
-                char[] buffer = new char[4096];
-                while (!done && System.currentTimeMillis() < maxEndTime) {
-                    int length = inputStream.read(buffer);
-                    if (length >= 0) {
-                        output.append(buffer, 0, length);
-                    } else {
-                        try {
-                            int result = captureProcess.exitValue();
-                            done = true;
-                            if (result != 0) {
-                                throw new RuntimeException("Failed to capture URI image successfully:\n" +
-                                        uri + "\n" + output.toString()
-                                );
-                            }
-                        } catch (IllegalThreadStateException e) {
-                            //expected - work not yet done...
-                            //The only case I've yet found where an empty catch block may be justified.
-                        }
-                    }
+        int result = ProcessExecutor.execute(processBuilder, System.currentTimeMillis() + maxWait + delayInSeconds * 1000 + TIMEOUT_GRACE_PERIOD);
 
-                }
-                System.err.println(output);
-                if (!done) {
-                    captureProcess.destroy();
-                }
-            } finally {
-                inputStream.close();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (result != 0) {
+            System.out.println("Process exited with value " + result);
+            throw new RuntimeException("Failed to capture URI image successfully: " +
+                    uri + " result was " + result);
+        }
+
+        if (!outputFile.exists()) {
+            throw new RuntimeException("Failed to capture URI image successfully: " +
+                    uri + ", image not found.");
         }
         return new FileSnapshot(uri, outputFile, dateHelper.current());
+
     }
 
 

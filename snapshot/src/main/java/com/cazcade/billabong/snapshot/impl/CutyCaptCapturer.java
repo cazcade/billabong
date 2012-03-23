@@ -20,10 +20,7 @@ import com.cazcade.billabong.common.DateHelper;
 import com.cazcade.billabong.snapshot.Capturer;
 import com.cazcade.billabong.snapshot.Snapshot;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.UUID;
 
@@ -53,8 +50,30 @@ public class CutyCaptCapturer implements Capturer {
         UUID uuid = UUID.randomUUID();
         File outputFile = new File(outputPath, uuid.toString() + "." + outputType);
         outputFile.getParentFile().mkdirs();
+
+        //Cache Warm Up
+        int warmUpResult = ProcessExecutor.execute(new ProcessBuilder(
+                executable,
+                "--http-proxy=http://localhost:3128",
+                "--url=" + uri.toString(),
+                "--out=/dev/null",
+                "--max-wait=1000",
+                "--plugins=on",
+                "--user-agent='Billabong 1.1 (CutyCapt) Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_7; da-dk) AppleWebKit/533.211 " +
+                        "(KHTML, like Gecko) Version/5.0.5 Safari/533.21.1'"
+        ), System.currentTimeMillis() + TIMEOUT_GRACE_PERIOD);
+
+        if (warmUpResult != 0) {
+            //We want to fail fast here, clearly we have a problem loading the page, we don't want to wait any longer now.
+            System.out.println("Warm up process exited with value " + warmUpResult);
+            throw new RuntimeException("Failed to warm up image capture successfully: " +
+                    uri + " result was " + warmUpResult);
+        }
+
+        //now for real
         ProcessBuilder processBuilder = new ProcessBuilder(
                 executable,
+                "--http-proxy=http://localhost:3128",
                 "--url=" + uri.toString(),
                 "--out=" + outputFile.toString(),
                 "--min-width=" + minWidth,
@@ -65,61 +84,17 @@ public class CutyCaptCapturer implements Capturer {
                 "--user-agent='Billabong 1.1 (CutyCapt) Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_7; da-dk) AppleWebKit/533.211 " +
                         "(KHTML, like Gecko) Version/5.0.5 Safari/533.21.1'"
         );
+        int result = ProcessExecutor.execute(processBuilder, System.currentTimeMillis() + maxWait + delayInSeconds * 1000 + TIMEOUT_GRACE_PERIOD);
 
-        System.out.println(processBuilder.command());
-        processBuilder.redirectErrorStream(true);
-        try {
-            Process captureProcess = processBuilder.start();
-            InputStreamReader inputStream = new InputStreamReader(
-                    new BufferedInputStream(captureProcess.getInputStream())
-            );
-            boolean done = false;
-            try {
-                long maxEndTime = System.currentTimeMillis() + maxWait + delayInSeconds * 1000 + TIMEOUT_GRACE_PERIOD;
-                StringBuffer output = new StringBuffer();
-                char[] buffer = new char[4096];
-                while (!done && System.currentTimeMillis() < maxEndTime) {
-                    try {
-                        int result = captureProcess.exitValue();
-                        done = true;
-                        if (result != 0) {
-                            System.out.println("Process exited with value " + result);
-
-                            if (!outputFile.exists()) {
-                                throw new RuntimeException("Failed to capture URI image successfully:\n" +
-                                        uri + "\n" + output.toString()
-                                );
-                            }
-                        }
-                    } catch (IllegalThreadStateException e) {
-                        //expected - work not yet done...
-                        //The only case I've yet found where an empty catch block may be justified.
-                    }
-                    if (inputStream.ready()) {
-                        int length = inputStream.read(buffer);
-                        if (length >= 0) {
-                            output.append(buffer, 0, length);
-                        }
-                    } else {
-                        Thread.sleep(100);
-                    }
-
-                }
-                System.err.println(output);
-            } finally {
-                inputStream.close();
-                if (!done) {
-                    System.out.println("Timed out destroying process.");
-                    captureProcess.destroy();
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
+        if (result != 0) {
+            System.out.println("Process exited with value " + result);
+//            throw new RuntimeException("Failed to capture URI image successfully: " +
+//                    uri + " result was " + result);
         }
-        if (!outputFile.exists()) {
-            throw new RuntimeException("Failed to snapshot " + processBuilder.command());
 
+        if (!outputFile.exists()) {
+            throw new RuntimeException("Failed to capture URI image successfully: " +
+                    uri + ", image not found.");
         }
         return new FileSnapshot(uri, outputFile, dateHelper.current());
     }
