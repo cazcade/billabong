@@ -34,7 +34,7 @@ public class WKHTMLCapturer implements Capturer {
     private String outputPath = System.getProperty("cazcade.home", ".") + "/billabong/wkhtml/tmp";
     private int maxWidth = 1024;
     private int maxHeight = 0;
-    private int maxWait = 10000;
+    private int maxWait = 30000;
 
 
     private final DateHelper dateHelper;
