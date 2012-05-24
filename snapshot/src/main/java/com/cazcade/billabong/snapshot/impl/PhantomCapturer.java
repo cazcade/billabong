@@ -27,24 +27,20 @@ import java.util.UUID;
 /**
  * Wrapper class for the CutyCapt executable.
  */
-public class WKHTMLCapturer implements Capturer {
+public class PhantomCapturer implements Capturer {
     public static final int TIMEOUT_GRACE_PERIOD = 5000;
-    private final String executable;
     private String outputType = "png";
-    private String outputPath = System.getProperty("cazcade.home", ".") + "/billabong/wkhtml/tmp";
-    private int maxWidth = 1024;
-    private int maxHeight = 0;
+    private String outputPath = System.getProperty("cazcade.home", ".") + "/billabong/phantom/tmp";
     private int maxWait = 30000;
 
 
     private final DateHelper dateHelper;
-    private final String userAgent = "Billabong 1.1 (WKHTMLImage) Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) " +
+    private final String userAgent = "Billabong 1.1 (Phantom) Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) " +
             "AppleWebKit/534.52.7 (KHTML, " +
             "like Gecko) Version/5.1.2 Safari/534.52.7";
 
     @SuppressWarnings({"SameParameterValue", "SameParameterValue"})
-    public WKHTMLCapturer(String executable, DateHelper dateHelper) {
-        this.executable = executable;
+    public PhantomCapturer(DateHelper dateHelper) {
         this.dateHelper = dateHelper;
     }
 
@@ -57,42 +53,15 @@ public class WKHTMLCapturer implements Capturer {
         outputFile.getParentFile().mkdirs();
         final String delayString = String.valueOf(delayInSeconds * 1000);
         ProcessBuilder processBuilder;
-        if (waitForWindowStatus != null) {
-            processBuilder = new ProcessBuilder(
-                    executable,
-                    "--width", String.valueOf(maxWidth),
-//                    "--crop-w", String.valueOf(minWidth),
-                    "--height", String.valueOf(maxHeight),
-//                    "--crop-h", String.valueOf(minHeight),
-                    "--use-xserver",
-                    "--custom-header", "User-Agent", userAgent,
-                    //we don't stop slow scripts because (in theory) we're waiting on a window.status value
-                    "--no-stop-slow-scripts",
-                    "--window-status", waitForWindowStatus,
-//                    "--javascript-delay", delayString,
-                    "--enable-plugins",
-                    "--load-error-handling", "ignore",
-//                    "--proxy","http://127.0.0.1:3128",
-                    uri.toString(),
-                    outputFile.toString()
-            );
-        } else {
-            processBuilder = new ProcessBuilder(
-                    executable,
-                    "--width", String.valueOf(maxWidth),
-//                    "--crop-w", String.valueOf(minWidth),
-                    "--height", String.valueOf(maxHeight),
-//                    "--crop-h", String.valueOf(minHeight),
-                    "--use-xserver",
-                    "--custom-header", "User-Agent", userAgent,
-                    "--javascript-delay", delayString,
-                    "--enable-plugins",
-                    "--load-error-handling", "ignore",
-//                    "--proxy","http://127.0.0.1:3128",
-                    uri.toString(),
-                    outputFile.toString()
-            );
-        }
+
+        processBuilder = new ProcessBuilder(
+                System.getProperty("user.home", ".") + "/phantomjs/bin/phantomjs",
+                System.getProperty("user.home", ".") + "/etc/render_snapito.js",
+                uri.toString(),
+                outputFile.toString(),
+                delayString
+        );
+
         int result = ProcessExecutor.execute(processBuilder, System.currentTimeMillis() + maxWait + delayInSeconds * 1000 + TIMEOUT_GRACE_PERIOD);
 
 
@@ -127,14 +96,6 @@ public class WKHTMLCapturer implements Capturer {
         if (!outputPathFile.exists()) {
             outputPathFile.mkdirs();
         }
-    }
-
-    public void setMaxWidth(int maxWidth) {
-        this.maxWidth = maxWidth;
-    }
-
-    public void setMaxHeight(int maxHeight) {
-        this.maxHeight = maxHeight;
     }
 
 

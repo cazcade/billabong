@@ -50,7 +50,7 @@ public class DefaultCacheManager implements CacheManager {
     //This object must only be accessed in a block synchronized by the mutex object.
     private final Map<String, Future> futureMap = new HashMap<String, Future>();
     private Capturer wkhtmlCapturer;
-    private Capturer cutyCapturer;
+    private Capturer primaryCapturer;
 
 
     public void setType(String type) {
@@ -59,12 +59,12 @@ public class DefaultCacheManager implements CacheManager {
 
     private String type = "png";
 
-    public DefaultCacheManager(ExecutorService executor, Capturer wkhtmlCapturer, Capturer cutyCapturer, Capturer imageCapturer,
+    public DefaultCacheManager(ExecutorService executor, Capturer wkhtmlCapturer, Capturer primaryCapturer, Capturer imageCapturer,
                                BinaryStore store, Map<ImageSize, ImageProcessor> uriSizes,
                                Map<ImageSize, ImageProcessor> imageUriSizes) {
         this.executor = executor;
         this.wkhtmlCapturer = wkhtmlCapturer;
-        this.cutyCapturer = cutyCapturer;
+        this.primaryCapturer = primaryCapturer;
         this.store = store;
         this.uriSizes = uriSizes;
         this.imageCapturer = imageCapturer;
@@ -116,7 +116,7 @@ public class DefaultCacheManager implements CacheManager {
                 if (waitForStatus != null) {
                     capturer = wkhtmlCapturer;
                 } else {
-                    capturer = cutyCapturer;
+                    capturer = primaryCapturer;
                 }
                 long time = capture(capturer);
                 System.out.println("Time: " + (System.currentTimeMillis() - time) + "ms.");
@@ -125,12 +125,12 @@ public class DefaultCacheManager implements CacheManager {
                 //fallback to the alternate
                 if (capturer == wkhtmlCapturer) {
                     try {
-                        capture(cutyCapturer);
+                        capture(primaryCapturer);
                     } catch (Exception e1) {
                         e.printStackTrace();
                     }
                 }
-                if (capturer == cutyCapturer) {
+                if (capturer == primaryCapturer) {
                     try {
                         capture(wkhtmlCapturer);
                     } catch (Exception e1) {

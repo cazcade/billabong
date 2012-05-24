@@ -51,37 +51,21 @@ public class CutyCaptCapturer implements Capturer {
         File outputFile = new File(outputPath, uuid.toString() + "." + outputType);
         outputFile.getParentFile().mkdirs();
 
-        //Cache Warm Up
-        int warmUpResult = ProcessExecutor.execute(new ProcessBuilder(
-                executable,
-                "--http-proxy=http://localhost:3128",
-                "--url=" + uri.toString(),
-                "--out=/dev/null",
-                "--max-wait=1000",
-                "--plugins=on",
-                "--user-agent='Billabong 1.1 (CutyCapt) Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_7; da-dk) AppleWebKit/533.211 " +
-                        "(KHTML, like Gecko) Version/5.0.5 Safari/533.21.1'"
-        ), System.currentTimeMillis() + TIMEOUT_GRACE_PERIOD);
-
-        if (warmUpResult != 0) {
-            //We want to fail fast here, clearly we have a problem loading the page, we don't want to wait any longer now.
-            System.out.println("Warm up process exited with value " + warmUpResult);
-            throw new RuntimeException("Failed to warm up image capture successfully: " +
-                    uri + " result was " + warmUpResult);
-        }
 
         //now for real
         ProcessBuilder processBuilder = new ProcessBuilder(
-                executable,
-                "--http-proxy=http://localhost:3128",
-                "--url=" + uri.toString(),
-                "--out=" + outputFile.toString(),
-                "--min-width=" + minWidth,
-                "--min-height=" + minHeight,
-                "--max-wait=" + (maxWait + delayInSeconds * 1000),
-                "--delay=" + delayInSeconds * 1000,
-                "--plugins=on",
-                "--user-agent='Billabong 1.1 (CutyCapt) Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_7; da-dk) AppleWebKit/533.211 " +
+                "/bin/bash",
+                "-c",
+                System.getProperty("user.home") + "/bin/CutyScript " +
+                        " --http-proxy=http://localhost:3128 " +
+                        " --url='" + uri.toString() + "'" +
+                        " --out=" + outputFile.toString() +
+                        " --min-width=" + minWidth +
+                        " --min-height=" + minHeight +
+                        " --max-wait=" + (maxWait + delayInSeconds * 1000) +
+                        " --delay=" + delayInSeconds * 1000 +
+                        " --plugins=on" +
+                        " --user-agent='Billabong 1.1 (CutyCapt) Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_7; da-dk) AppleWebKit/533.211 " +
                         "(KHTML, like Gecko) Version/5.0.5 Safari/533.21.1'"
         );
         int result = ProcessExecutor.execute(processBuilder, System.currentTimeMillis() + maxWait + delayInSeconds * 1000 + TIMEOUT_GRACE_PERIOD);

@@ -283,11 +283,16 @@
         <constructor-arg index="1" ref="dateHelper"/>
     </bean>
 
+    <bean id="phantomCapturer" class="com.cazcade.billabong.snapshot.impl.PhantomCapturer">
+        <constructor-arg index="0" ref="dateHelper"/>
+    </bean>
+
+
     <bean id="imageCapturer" class="com.cazcade.billabong.snapshot.impl.ImageURICapturer">
     </bean>
 
     <bean id="executor" class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">
-        <constructor-arg index="0" value="40"/>
+        <constructor-arg index="0" value="20"/>
     </bean>
 
     <bean id="clippingImageProcessor" class="com.cazcade.billabong.processing.impl.ClippingImageProcessor">
