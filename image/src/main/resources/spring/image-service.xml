@@ -107,7 +107,7 @@
     <!--</bean>-->
 
     <bean id="store" class="com.cazcade.billabong.store.impl.CloudFilesBasedBinaryStore">
-        <constructor-arg index="0" value="public"/>
+        <constructor-arg index="0" value="snapito"/>
         <constructor-arg index="1" value="image/png"/>
     </bean>
 
@@ -119,7 +119,7 @@
 
     <bean id="userContentStore" class="com.cazcade.billabong.store.impl.UserContentStore">
         <constructor-arg index="0" ref="userContentBinaryStore"/>
-        <constructor-arg index="1" value="http://c769801.r1.cf3.rackcdn.com/"/>
+        <constructor-arg index="1" value="http://f2e2944c8493e5f39236-257706dc908c3a600a8889d6ceb73290.r20.cf3.rackcdn.com/"/>
     </bean>
 
     <bean id="cacheManager" class="com.cazcade.billabong.image.impl.DefaultCacheManager">

@@ -21,5 +21,14 @@ package com.cazcade.billabong.image;
  * with time.
  */
 public enum ImageSize {
-    LARGE, CLIPPED_LARGE, CLIPPED_MEDIUM, CLIPPED_SMALL, PROFILE_SMALL
+
+    LARGE(1024,-1), CLIPPED_LARGE(1024,768), CLIPPED_MEDIUM(512,384), CLIPPED_SMALL(320,200), PROFILE_SMALL(80,50);
+
+    public int width;
+    public int height;
+
+    private ImageSize(int width, int height) {
+        this.width = width;
+        this.height = height;
+    }
 }
